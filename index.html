@@ -3,34 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Guidexa | Companion Dashboard</title>
+    <title>GuideAI | Companion Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root { --main-font: 'Plus Jakarta Sans', sans-serif; }
         [dir="rtl"] { --main-font: 'Noto Sans Arabic', sans-serif; }
-        
         body { background-color: #f8fafc; color: #1e293b; font-family: var(--main-font); transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
         .card { background: white; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; }
-        
-        /* Mobile Optimized Sliders */
         .slider { -webkit-appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; outline: none; }
         .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: #0ea5e9; cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        
         .sos-btn { background: #ef4444; transition: all 0.3s ease; box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39); }
         .sos-btn:active { transform: scale(0.95); }
-        
         #alertModal, #contactModal { display: none; }
         .modal-bg { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); }
-        
-        /* Hide scrollbar for cleaner look */
         ::-webkit-scrollbar { width: 0px; background: transparent; }
+        .heat-safe { background: #0ea5e9; box-shadow: 0 0 30px 10px rgba(14, 165, 233, 0.4); }
+        .heat-warning { background: #f97316; box-shadow: 0 0 30px 10px rgba(249, 115, 22, 0.4); }
+        .heat-danger { background: #ef4444; box-shadow: 0 0 30px 10px rgba(239, 68, 68, 0.4); }
+        @keyframes pulse-blue {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(14, 165, 233, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+        .user-pulse { animation: pulse-blue 2s infinite; }
     </style>
 </head>
 <body class="p-4 md:p-8">
 
-    <div id="alertModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div id="alertModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="modal-bg absolute inset-0" onclick="closeModal()"></div>
         <div class="card relative bg-white p-6 md:p-8 max-w-sm w-full text-center shadow-2xl">
             <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
@@ -44,18 +46,18 @@
         <div class="modal-bg absolute inset-0" onclick="closeContactModal()"></div>
         <div class="card relative bg-white p-6 md:p-8 max-w-md w-full shadow-2xl">
             <h3 class="text-lg font-bold mb-4 italic text-slate-800" data-t="edit_contact">Edit Emergency Contact</h3>
-            <div class="space-y-4 text-left" dir="ltr">
+            <div class="space-y-4 text-left">
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1" data-t="full_name">Full Name</label>
-                    <input type="text" id="editName" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-sky-500 outline-none" value="Omar">
+                    <input type="text" id="editName" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" value="Omar">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1" data-t="relationship">Relationship</label>
-                    <input type="text" id="editRel" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-sky-500 outline-none" value="Friend">
+                    <input type="text" id="editRel" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" value="Friend">
                 </div>
                 <div>
                     <label class="text-[10px] font-bold text-slate-400 uppercase ml-1" data-t="phone">Phone Number</label>
-                    <input type="tel" id="editPhone" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 ring-sky-500 outline-none" value="+1 (555) 000-1234">
+                    <input type="tel" id="editPhone" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" value="+966 50 000 0000">
                 </div>
             </div>
             <div class="flex gap-3 mt-8">
@@ -65,10 +67,10 @@
         </div>
     </div>
 
-<nav class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 max-w-6xl mx-auto">
+    <nav class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 max-w-6xl mx-auto">
         <div class="flex items-center gap-3 self-start sm:self-center">
-            <div class="w-12 h-12 flex items-center justify-center">
-                <img src="logo.png" alt="Guidexa Logo" class="w-full h-full object-contain" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2103/2103633.png'">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl">
+                <img src="logo.png" alt="">
             </div>
             <div>
                 <h1 class="text-xl font-bold leading-none">GuideAI</h1>
@@ -76,12 +78,11 @@
             </div>
         </div>
         
-        <div class="flex items-center justify-between w-full sm:w-auto gap-2 md:gap-4">
-            <button onclick="toggleLanguage()" class="bg-white border border-slate-200 px-4 py-2 rounded-xl text-xs font-bold hover:bg-slate-50 flex items-center gap-2">
+        <div class="flex items-center justify-between w-full sm:w-auto gap-2">
+            <button onclick="toggleLanguage()" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 flex items-center gap-2">
                 <i class="fas fa-globe text-sky-500"></i>
                 <span id="langBtnText">العربية</span>
             </button>
-
             <button onclick="triggerSOS()" class="sos-btn text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2">
                 <i class="fas fa-circle-exclamation"></i> <span data-t="sos_btn">SOS Emergency</span>
             </button>
@@ -90,105 +91,153 @@
 
     <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
         
-        <div class="lg:col-span-4 space-y-4 md:space-y-6">
+        <div class="lg:col-span-4 space-y-4">
             <div class="card p-6 text-center">
                 <div class="relative inline-block mb-4">
-                    <div class="w-32 h-40 md:w-40 md:h-52 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
-                        <i class="fas fa-vest text-5xl md:text-6xl text-slate-300"></i>
+                    <div class="w-32 h-40 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
+                        <i class="fas fa-vest text-5xl text-slate-300"></i>
                     </div>
                     <span id="statusIndicator" class="absolute top-2 right-2 bg-green-500 w-4 h-4 rounded-full border-4 border-white"></span>
                 </div>
                 <h2 class="text-lg font-bold" data-t="vest_name">Guidexa Smart Vest</h2>
                 <p id="connStatus" class="text-slate-500 text-xs mb-6" data-t="connected">Connected</p>
                 
-                <div class="space-y-4 text-left px-2">
+                <div class="grid grid-cols-3 gap-2 mb-6">
+                    <button onclick="setMode('urban')" id="btn-urban" class="mode-btn p-2 rounded-xl border border-slate-100 hover:bg-sky-50 transition">
+                        <i class="fas fa-city text-slate-400 mb-1"></i>
+                        <p class="text-[8px] font-bold uppercase" data-t="mode_urban">Urban</p>
+                    </button>
+                    <button onclick="setMode('park')" id="btn-park" class="mode-btn p-2 rounded-xl border border-slate-100 hover:bg-sky-50 transition">
+                        <i class="fas fa-tree text-slate-400 mb-1"></i>
+                        <p class="text-[8px] font-bold uppercase" data-t="mode_park">Park</p>
+                    </button>
+                    <button onclick="setMode('home')" id="btn-home" class="mode-btn p-2 rounded-xl border border-slate-100 hover:bg-sky-50 transition">
+                        <i class="fas fa-house text-slate-400 mb-1"></i>
+                        <p class="text-[8px] font-bold uppercase" data-t="mode_home">Home</p>
+                    </button>
+                </div>
+
+                <div class="space-y-4 text-left px-2 mb-6">
                     <div class="flex justify-between items-center text-xs">
                         <span class="text-slate-600 font-medium"><i class="fas fa-battery-three-quarters mr-2 text-sky-500"></i> <span data-t="battery">Battery</span></span>
                         <span id="batteryVal" class="font-bold">72%</span>
                     </div>
                     <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div id="batteryBar" class="bg-sky-500 h-full w-[72%] transition-all duration-500"></div>
+                        <div id="batteryBar" class="bg-sky-500 h-full w-[72%] transition-all"></div>
                     </div>
                 </div>
-                <button onclick="pingVest()" class="w-full mt-6 py-3 border-2 border-slate-100 rounded-2xl text-xs font-bold text-slate-600 active:bg-slate-50" data-t="ping_btn">
-                    Ping Vest
-                </button>
+                <button onclick="pingVest()" class="w-full py-3 border-2 border-slate-100 rounded-2xl text-xs font-bold text-slate-600 active:bg-slate-50" data-t="ping_btn">Ping Vest</button>
             </div>
+
+            <div id="guardianCard" class="card p-5 bg-slate-900 text-white">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xs font-bold uppercase opacity-80" data-t="guardian_mode">Guardian Mode</h3>
+                    <div id="liveIndicator" class="hidden h-2 w-2 relative"><span class="animate-ping absolute inset-0 rounded-full bg-sky-400 opacity-75"></span><span class="bg-sky-500 rounded-full h-2 w-2 relative"></span></div>
+                </div>
+                <p id="guardianText" class="text-sm mb-4"><span data-t="sharing_with">Sharing path with</span> <span id="displayName" class="font-bold underline cursor-pointer" onclick="openContactModal()">Omar</span></p>
+                <button id="guardianBtn" onclick="toggleGuardian()" class="w-full py-2 bg-white/10 rounded-lg text-[10px] font-bold" data-t="start_broadcasting">START BROADCASTING</button>
+            </div>
+            <div class="card p-6 bg-slate-900 text-white relative overflow-hidden mt-4">
+    <div class="relative z-10">
+        <h3 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-2" data-t="dyk_title">Did You Know?</h3>
+        <p class="text-xs leading-relaxed opacity-90" data-t="dyk_fact">
+            100% of this vest is made from recycled rPET from 25 plastic bottles per vest.
+        </p>
+    </div>
+    <i class="fas fa-recycle absolute -right-2 -bottom-2 text-5xl text-white/5"></i>
+</div>
+            
         </div>
 
+        
+
         <div class="lg:col-span-8 space-y-4 md:space-y-6">
-            <div class="card p-6 md:p-8">
-                <h3 class="text-base font-bold mb-6 flex items-center gap-2">
-                    <i class="fas fa-sliders text-sky-500"></i> <span data-t="calib_title">Calibration</span>
-                </h3>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-semibold text-slate-500 uppercase" data-t="vib_label">Vibration</label>
-                            <span id="vibVal" class="text-sky-600 text-xs font-bold">80%</span>
-                        </div>
-                        <input type="range" class="slider" min="0" max="100" value="80" oninput="updateVal('vibVal', this.value + '%')">
+            <div class="card p-6">
+                <div class="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 class="text-base font-bold" data-t="diag_title">System Health</h3>
+                        <p class="text-xs text-slate-500" data-t="diag_subtitle">Real-time sensor performance</p>
                     </div>
-
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-semibold text-slate-500 uppercase" data-t="dist_label">Distance</label>
-                            <span id="distVal" class="text-sky-600 text-xs font-bold">2.5m</span>
-                        </div>
-                        <input type="range" class="slider" min="0.5" max="5" step="0.1" value="2.5" oninput="updateVal('distVal', this.value + 'm')">
+                    <div class="text-right">
+                        <span class="text-2xl font-black text-sky-600">98%</span>
+                        <p class="text-[10px] uppercase font-bold text-green-500" data-t="optimal">Optimal</p>
                     </div>
-
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-semibold text-slate-500 uppercase" data-t="sens_label">Sensitivity</label>
-                            <span id="sensVal" class="text-sky-600 text-xs font-bold" data-t="high">High</span>
-                        </div>
-                        <input type="range" class="slider" min="1" max="3" value="3" oninput="updateSensitivity(this.value)">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase"><span data-t="tof_sensors">ToF Sensors</span><span class="text-green-500" data-t="active">Active</span></div>
+                        <div class="flex gap-1 h-8 items-end"><div class="bg-sky-500 w-full h-3/4 rounded-sm"></div><div class="bg-sky-500 w-full h-1/2 rounded-sm"></div><div class="bg-sky-500 w-full h-full rounded-sm"></div><div class="bg-sky-500 w-full h-2/3 rounded-sm"></div></div>
                     </div>
-
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="text-xs font-semibold text-slate-500 uppercase" data-t="snd_label">Sound</label>
-                            <span id="sndVal" class="text-sky-600 text-xs font-bold">40%</span>
-                        </div>
-                        <input type="range" class="slider" min="0" max="100" value="40" oninput="updateVal('sndVal', this.value + '%')">
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase"><span data-t="haptics">Haptics</span><span class="text-green-500" data-t="ready">Ready</span></div>
+                        <div class="flex gap-1 h-8 items-center justify-center"><i class="fas fa-wave-square text-sky-300 animate-pulse"></i></div>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase"><span data-t="network">Network</span><span class="text-sky-500">42ms</span></div>
+                        <div class="flex gap-1 h-8 items-end justify-center text-sky-500"><i class="fas fa-signal"></i></div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <div class="card p-6">
-                    <h3 class="font-bold text-sm text-slate-800 mb-4" data-t="diag_title">Diagnostics</h3>
-                    <div class="space-y-2">
-                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                            <span class="text-xs font-medium" data-t="lidar">ToF Sensors</span>
-                            <span class="text-[10px] text-green-600 font-black uppercase" data-t="ready">Ready</span>
-                        </div>
-                        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-                            <span class="text-xs font-medium" data-t="haptic">Haptic Units</span>
-                            <span class="text-[10px] text-green-600 font-black uppercase" data-t="ready">Ready</span>
+            <div class="card p-6 overflow-hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h3 class="text-base font-bold" data-t="heatmap_title">Safe Paths Heatmap</h3>
+                        <p class="text-xs text-slate-500 font-medium" data-t="heatmap_subtitle">Visualizing frequent obstacle zones</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="flex items-center gap-1.5 text-[10px] font-black text-sky-600 uppercase tracking-tighter">
+                            <span class="w-3 h-3 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6)]"></span> <span data-t="clear">Clear</span>
+                        </span>
+                        <span class="flex items-center gap-1.5 text-[10px] font-black text-orange-600 uppercase tracking-tighter">
+                            <span class="w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span> <span data-t="warning">Warning</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="relative w-full h-64 bg-slate-900 rounded-2xl overflow-hidden border-2 border-slate-200">
+                    <img src="map.png" alt="Map" class="absolute inset-0 w-full h-full object-cover opacity-50 grayscale invert">
+                    <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-sky-500/30 blur-3xl rounded-full"></div>
+                    <div class="absolute top-1/2 right-1/4 w-24 h-24 bg-orange-500/30 blur-2xl rounded-full"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
+                        <div class="w-5 h-5 bg-sky-500 border-2 border-white rounded-full shadow-[0_0_15px_rgba(14,165,233,1)] user-pulse"></div>
+                        <div class="mt-2 bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-600">
+                            <p class="text-[8px] font-black text-white uppercase tracking-widest" data-t="you_are_here">You Are Here</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="card p-6 bg-slate-900 text-white relative overflow-hidden group">
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start">
-                            <h3 class="text-sm font-bold mb-2" data-t="contact_title">Emergency Contact</h3>
-                            <button onclick="openContactModal()" class="w-8 h-8 flex items-center justify-center bg-white/10 rounded-lg">
-                                <i class="fas fa-pen text-[10px]"></i>
-                            </button>
-                        </div>
-                        <div class="flex items-center gap-3 mt-4">
-                            <img id="displayAvatar" src="https://ui-avatars.com/api/?name=Omar&background=fff&color=000" class="w-10 h-10 rounded-full border-2 border-slate-700">
-                            <div>
-                                <p id="displayName" class="text-xs font-bold tracking-wide text-white">Omar</p>
-                                <p id="displayRel" class="text-[9px] text-sky-400 font-bold uppercase" data-t="friend">Friend</p>
-                            </div>
-                        </div>
+                <div class="mt-6 grid grid-cols-2 gap-4">
+                    <div class="bg-sky-50 p-3 rounded-xl border border-sky-100 text-left">
+                        <p class="text-[9px] font-black text-sky-600 uppercase" data-t="most_traveled">Most Traveled</p>
+                        <p class="text-sm font-bold text-slate-800 italic" data-t="park_trail">Paris Street</p>
                     </div>
-                    <i class="fas fa-shield-alt absolute -right-4 -bottom-4 text-7xl text-white/5"></i>
+                    <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 text-left">
+                        <p class="text-[9px] font-black text-orange-600 uppercase" data-t="caution_area">Caution Area</p>
+                        <p class="text-sm font-bold text-slate-800 italic" data-t="construction">Dr. Thabet Thabet Roundabout</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-6 md:p-8">
+                <h3 class="text-base font-bold mb-6 flex items-center gap-2"><i class="fas fa-sliders text-sky-500"></i> <span data-t="calib_title">Calibration</span></h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
+                    <div class="space-y-3">
+                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="vib_label">VIBRATION</label><span id="vibVal" class="text-sky-600 text-xs font-bold">80%</span></div>
+                        <input type="range" id="sl-vib" class="slider" oninput="updateVal('vibVal', this.value + '%')">
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="dist_label">DISTANCE</label><span id="distVal" class="text-sky-600 text-xs font-bold">2.5m</span></div>
+                        <input type="range" id="sl-dist" class="slider" min="0.5" max="5" step="0.1" oninput="updateVal('distVal', this.value + 'm')">
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="sens_label">SENSITIVITY</label><span id="sensVal" class="text-sky-600 text-xs font-bold">High</span></div>
+                        <input type="range" id="sl-sens" class="slider" min="1" max="3" oninput="updateSensitivity(this.value)">
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="snd_label">SOUND</label><span id="sndVal" class="text-sky-600 text-xs font-bold">40%</span></div>
+                        <input type="range" id="sl-snd" class="slider" oninput="updateVal('sndVal', this.value + '%')">
+                    </div>
                 </div>
             </div>
         </div>
@@ -197,30 +246,34 @@
     <script>
         const translations = {
             en: {
-                lang_btn: "العربية", subtitle: "Companion App", sos_btn: "SOS",
-                vest_name: "Guidexa Smart Vest", connected: "Connected", battery: "Battery",
-                ping_btn: "Ping Vest", calib_title: "Calibration", vib_label: "Vibration",
-                dist_label: "Distance", sens_label: "Sensitivity",
-                snd_label: "Sound", diag_title: "Diagnostics", lidar: "ToF Sensors",
-                haptic: "Haptic Units", ready: "Ready", contact_title: "Emergency Contact",
-                high: "High", med: "Medium", low: "Low", dismiss: "Dismiss", friend: "Friend",
-                edit_contact: "Edit Contact", full_name: "Full Name",
-                relationship: "Relationship", phone: "Phone Number", cancel: "Cancel", save: "Save",
-                sos_alert_title: "Alert Sent", sos_alert_msg: "Notified {name} and emergency services.",
-                ping_alert_title: "Vest Pinged", ping_alert_msg: "Vibrating now."
+                subtitle: "Companion App", sos_btn: "SOS", vest_name: "Guidexa Smart Vest", connected: "Connected", battery: "Battery",
+                ping_btn: "Ping Vest", calib_title: "Calibration", vib_label: "Vibration", dist_label: "Distance", sens_label: "Sensitivity",
+                snd_label: "Sound", diag_title: "System Health", diag_subtitle: "Real-time sensor performance", optimal: "Optimal",
+                tof_sensors: "ToF Sensors", active: "Active", haptics: "Haptics", ready: "Ready", network: "Network",
+                heatmap_title: "Safe Paths Heatmap", heatmap_subtitle: "Visualizing frequent obstacle zones", clear: "Clear", warning: "Warning",
+                you_are_here: "You Are Here", most_traveled: "Most Traveled", park_trail: "Paris Street",
+                caution_area: "Caution Area", construction: "Dr. Thabet Thabet Roundabout", high: "High", med: "Medium", low: "Low", dismiss: "Dismiss",
+                edit_contact: "Edit Contact", full_name: "Full Name", relationship: "Relationship", phone: "Phone Number", cancel: "Cancel", save: "Save",
+                mode_urban: "Urban", mode_park: "Park", mode_home: "Home", guardian_mode: "Guardian Mode", sharing_with: "Sharing path with",
+                start_broadcasting: "START BROADCASTING", stop_broadcasting: "STOP BROADCASTING",
+                sos_alert_title: "Emergency Sent", sos_alert_msg: "Guardian {name} has been notified with your GPS.", ping_alert_title: "Ping Sent", ping_alert_msg: "Vest is vibrating now.",
+                dyk_title: "Did You Know?",
+                 dyk_fact: "100% of this vest is made from recycled rPET from 25 plastic bottles per vest."
             },
             ar: {
-                lang_btn: "English", subtitle: "التطبيق الملحق", sos_btn: "طوارئ",
-                vest_name: "سترة Guidexa الذكية", connected: "متصل الآن", battery: "البطارية",
-                ping_btn: "تعقب السترة", calib_title: "المعايرة", vib_label: "الاهتزاز",
-                dist_label: "المسافة", sens_label: "الحساسية",
-                snd_label: "الصوت", diag_title: "الفحص الذاتي", lidar: "مستشعرات ToF",
-                haptic: "وحدات اللمس", ready: "جاهز", contact_title: "جهة الطوارئ",
-                high: "عالي", med: "متوسط", low: "منخفض", dismiss: "إغلاق", friend: "صديق",
-                edit_contact: "تعديل البيانات", full_name: "الاسم الكامل",
-                relationship: "صلة القرابة", phone: "رقم الهاتف", cancel: "إلغاء", save: "حفظ",
-                sos_alert_title: "تم الإرسال", sos_alert_msg: "تم إرسال إشعار لـ {name}.",
-                ping_alert_title: "تنبيه السترة", ping_alert_msg: "السترة تهتز الآن."
+                subtitle: "التطبيق الملحق", sos_btn: "طوارئ", vest_name: "سترة Guidexa الذكية", connected: "متصل الآن", battery: "البطارية",
+                ping_btn: "تنبيه السترة", calib_title: "المعايرة", vib_label: "الاهتزاز", dist_label: "المسافة", sens_label: "الحساسية",
+                snd_label: "الصوت", diag_title: "حالة النظام", diag_subtitle: "أداء المستشعرات في الوقت الفعلي", optimal: "مثالي",
+                tof_sensors: "مستشعرات ToF", active: "نشط", haptics: "وحدات اللمس", ready: "جاهز", network: "الشبكة",
+                heatmap_title: "خريطة المسارات الآمنة", heatmap_subtitle: "عرض مناطق العوائق المتكررة", clear: "آمن", warning: "تحذير",
+                you_are_here: "موقعك الحالي", most_traveled: "الأكثر تنقلاً", park_trail: "شارع باريس",
+                caution_area: "منطقة حذر", construction: "دوار ثابت ثابت", high: "عالي", med: "متوسط", low: "منخفض", dismiss: "إغلاق",
+                edit_contact: "تعديل المرافق", full_name: "الاسم", relationship: "الصلة", phone: "الهاتف", cancel: "إلغاء", save: "حفظ",
+                mode_urban: "مدني", mode_park: "منتزه", mode_home: "منزل", guardian_mode: "وضع المراقب", sharing_with: "مشاركة المسار مع",
+                start_broadcasting: "بدء البث", stop_broadcasting: "إيقاف البث",
+                sos_alert_title: "تم الإرسال", sos_alert_msg: "تم تنبيه المرافق {name} بموقعك.", ping_alert_title: "تنبيه", ping_alert_msg: "السترة تهتز الآن.",
+                dyk_title: "هل تعلم؟",
+                dyk_fact: "هذه السترة مصنوعة بنسبة 100% من بلاستيك rPET المعاد تدويره، بمعدل 25 زجاجة بلاستيكية لكل سترة."
             }
         };
 
@@ -228,58 +281,76 @@
 
         function toggleLanguage() {
             currentLang = currentLang === 'en' ? 'ar' : 'en';
-            const isAr = currentLang === 'ar';
-            document.getElementById('mainHtml').dir = isAr ? 'rtl' : 'ltr';
-            document.getElementById('langBtnText').innerText = translations[currentLang].lang_btn;
+            document.getElementById('mainHtml').dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('langBtnText').innerText = currentLang === 'ar' ? 'English' : 'العربية';
             document.querySelectorAll('[data-t]').forEach(el => {
                 const key = el.getAttribute('data-t');
                 if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
             });
-            updateSensitivity(document.querySelector('input[oninput*="updateSensitivity"]').value);
+            updateSensitivity(document.getElementById('sl-sens').value);
+            const btn = document.getElementById('guardianBtn');
+            btn.innerText = isBroadcasting ? translations[currentLang].stop_broadcasting : translations[currentLang].start_broadcasting;
         }
 
         function updateVal(id, value) { document.getElementById(id).innerText = value; }
 
         function updateSensitivity(val) {
             const label = document.getElementById('sensVal');
-            if(val == 1) label.innerText = translations[currentLang].low;
-            else if(val == 2) label.innerText = translations[currentLang].med;
-            else label.innerText = translations[currentLang].high;
+            const keys = {1: 'low', 2: 'med', 3: 'high'};
+            label.innerText = translations[currentLang][keys[val]];
+        }
+
+        function setMode(mode) {
+            const p = {
+                urban: { vib: 90, dist: 1.2, sens: 3, snd: 70 },
+                park:  { vib: 50, dist: 4.5, sens: 1, snd: 90 },
+                home:  { vib: 30, dist: 0.8, sens: 2, snd: 20 }
+            }[mode];
+            document.getElementById('sl-vib').value = p.vib; document.getElementById('sl-dist').value = p.dist;
+            document.getElementById('sl-sens').value = p.sens; document.getElementById('sl-snd').value = p.snd;
+            updateVal('vibVal', p.vib + '%'); updateVal('distVal', p.dist + 'm');
+            updateVal('sndVal', p.snd + '%'); updateSensitivity(p.sens);
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('bg-sky-50', 'border-sky-200'));
+            document.getElementById(`btn-${mode}`).classList.add('bg-sky-50', 'border-sky-200');
+        }
+
+        let isBroadcasting = false;
+        function toggleGuardian() {
+            isBroadcasting = !isBroadcasting;
+            const card = document.getElementById('guardianCard');
+            const btn = document.getElementById('guardianBtn');
+            const indicator = document.getElementById('liveIndicator');
+            card.className = isBroadcasting ? "card p-5 bg-sky-900 text-white" : "card p-5 bg-slate-900 text-white";
+            btn.innerText = isBroadcasting ? translations[currentLang].stop_broadcasting : translations[currentLang].start_broadcasting;
+            indicator.style.display = isBroadcasting ? 'block' : 'none';
         }
 
         const modal = document.getElementById('alertModal');
-        const mIcon = document.getElementById('modalIcon');
-        const mTitle = document.getElementById('modalTitle');
-        const mMsg = document.getElementById('modalMsg');
-
         function showModal(title, msg, type) {
-            mTitle.innerText = title;
-            mMsg.innerText = msg;
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMsg').innerText = msg;
             modal.style.display = 'flex';
-            mIcon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl ${type === 'emergency' ? 'bg-red-100 text-red-600' : 'bg-sky-100 text-sky-600'}`;
-            mIcon.innerHTML = type === 'emergency' ? '<i class="fas fa-phone-alt"></i>' : '<i class="fas fa-bell"></i>';
+            const icon = document.getElementById('modalIcon');
+            icon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl ${type === 'emergency' ? 'bg-red-100 text-red-600' : 'bg-sky-100 text-sky-600'}`;
+            icon.innerHTML = `<i class="fas fa-${type === 'emergency' ? 'phone' : 'bell'}"></i>`;
         }
 
         function closeModal() { modal.style.display = 'none'; }
         function openContactModal() { document.getElementById('contactModal').style.display = 'flex'; }
         function closeContactModal() { document.getElementById('contactModal').style.display = 'none'; }
-
         function saveContact() {
             const name = document.getElementById('editName').value;
             document.getElementById('displayName').innerText = name;
-            document.getElementById('displayAvatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=fff&color=000`;
             closeContactModal();
         }
-
         function triggerSOS() {
             const name = document.getElementById('displayName').innerText;
-            const msg = translations[currentLang].sos_alert_msg.replace('{name}', name);
-            showModal(translations[currentLang].sos_alert_title, msg, "emergency");
+            showModal(translations[currentLang].sos_alert_title, translations[currentLang].sos_alert_msg.replace('{name}', name), "emergency");
         }
-
         function pingVest() {
             showModal(translations[currentLang].ping_alert_title, translations[currentLang].ping_alert_msg, "info");
         }
+        setMode('home');
     </script>
 </body>
 </html>
