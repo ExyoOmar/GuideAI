@@ -3,354 +3,1574 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GuideAI | Companion Dashboard</title>
+    <title>GuideAI | Smart Companion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { --main-font: 'Plus Jakarta Sans', sans-serif; }
-        [dir="rtl"] { --main-font: 'Noto Sans Arabic', sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; font-family: var(--main-font); transition: all 0.2s ease; -webkit-tap-highlight-color: transparent; }
-        .card { background: white; border-radius: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); border: 1px solid #f1f5f9; }
-        .slider { -webkit-appearance: none; width: 100%; height: 8px; background: #e2e8f0; border-radius: 10px; outline: none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: #0ea5e9; cursor: pointer; border-radius: 50%; border: 4px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .sos-btn { background: #ef4444; transition: all 0.3s ease; box-shadow: 0 4px 14px 0 rgba(239, 68, 68, 0.39); }
-        .sos-btn:active { transform: scale(0.95); }
-        #alertModal, #contactModal { display: none; }
-        .modal-bg { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(4px); }
-        ::-webkit-scrollbar { width: 0px; background: transparent; }
-        .heat-safe { background: #0ea5e9; box-shadow: 0 0 30px 10px rgba(14, 165, 233, 0.4); }
-        .heat-warning { background: #f97316; box-shadow: 0 0 30px 10px rgba(249, 115, 22, 0.4); }
-        .heat-danger { background: #ef4444; box-shadow: 0 0 30px 10px rgba(239, 68, 68, 0.4); }
-        @keyframes pulse-blue {
-            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
-            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(14, 165, 233, 0); }
-            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        :root {
+            /* Dark Mode (Default) */
+            --bg: #0a0f1e;
+            --surface: #111827;
+            --surface2: #1a2234;
+            --border: rgba(255,255,255,0.08);
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --nav-bg: rgba(10,15,30,0.75);
+            
+            /* Shared Colors */
+            --accent: #38bdf8;
+            --accent2: #818cf8;
+            --danger: #f87171;
+            --warning: #fb923c;
+            --green: #34d399;
+            --font: 'DM Sans', sans-serif;
+            --mono: 'DM Mono', monospace;
         }
-        .user-pulse { animation: pulse-blue 2s infinite; }
+
+        /* Light Mode Variables */
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --surface2: #f1f5f9;
+            --border: rgba(0,0,0,0.08);
+            --text: #0f172a;
+            --muted: #64748b;
+            --nav-bg: rgba(10,15,30,0.75);
+        }
+        [dir="rtl"] { --font: 'Noto Sans Arabic', sans-serif; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: var(--font); 
+            transition: background 0.3s ease, color 0.3s ease; /* Smooth transition */
+        }
+        
+        /* Accessibility: focus rings */
+        *:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+
+        /* Background grid */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background-image: linear-gradient(rgba(56,189,248,0.03) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(56,189,248,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+       .card { background: var(--surface); border: 1px solid var(--border); }
+        .card2 { background: var(--surface2); border: 1px solid var(--border); }
+        /* Nav */
+     nav { 
+    background: var(--nav-bg); 
+    backdrop-filter: blur(20px); 
+    border-bottom: 1px solid var(--border); 
+}
+
+        /* Mode buttons */
+        .mode-btn { border: 1px solid var(--border); border-radius: 14px; padding: 10px 8px; transition: all 0.2s; cursor: pointer; background: transparent; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 56px; }
+        .mode-btn:hover { border-color: var(--accent); color: var(--accent); }
+        .mode-btn.active { background: rgba(56,189,248,0.12); border-color: var(--accent); color: var(--accent); }
+        .mode-btn i { font-size: 18px; }
+        .mode-btn span { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+
+        /* Slider */
+        .slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; outline: none; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: var(--accent); cursor: pointer; border-radius: 50%; border: 3px solid var(--bg); box-shadow: 0 0 10px rgba(56,189,248,0.5); }
+
+        /* SOS */
+        .sos-btn { background: var(--danger); box-shadow: 0 4px 20px rgba(248,113,113,0.4); transition: all 0.2s; border: none; cursor: pointer; border-radius: 14px; }
+        .sos-btn:active, .sos-btn:hover { transform: scale(0.97); box-shadow: 0 2px 10px rgba(248,113,113,0.6); }
+
+        /* Modals */
+        .modal-wrap { display: none; position: fixed; inset: 0; z-index: 60; align-items: center; justify-content: center; padding: 16px; }
+        .modal-bg { background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); position: absolute; inset: 0; }
+        .modal-box { position: relative; z-index: 1; width: 100%; max-width: 420px; }
+
+        /* AI Chat */
+        #aiPanel { display: none; position: fixed; inset: 0; z-index: 50; flex-direction: column; background: var(--bg); }
+        #aiPanel.open { display: flex; }
+        
+        .chat-bubble-user { background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.2); border-radius: 18px 18px 4px 18px; padding: 14px 16px; max-width: 85%; margin-left: auto; }
+        .chat-bubble-ai { background: var(--surface2); border: 1px solid var(--border); border-radius: 18px 18px 18px 4px; padding: 14px 16px; max-width: 90%; }
+        .chat-bubble-ai.thinking { opacity: 0.6; }
+
+        /* Status dot */
+        .dot-green { width: 10px; height: 10px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
+        .dot-red { width: 10px; height: 10px; background: var(--danger); border-radius: 50%; }
+        
+        /* Pulse animation */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56,189,248,0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 18px rgba(56,189,248,0); }
+            100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(56,189,248,0); }
+        }
+        .vest-pulse { animation: pulse-ring 2.5s infinite; }
+
+        @keyframes ping { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+        .dot-ping { animation: ping 1s infinite; }
+
+        /* Battery bar */
+        .batt-bar { height: 6px; border-radius: 6px; background: rgba(255,255,255,0.08); overflow: hidden; }
+        .batt-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width 0.5s ease; }
+
+        /* Sensor bars */
+        @keyframes bar-anim { 0%,100%{height:40%} 50%{height:100%} }
+        .bar { width: 100%; border-radius: 3px; background: var(--accent); animation: bar-anim 1.2s ease-in-out infinite; }
+        .bar:nth-child(2){animation-delay:0.2s}
+        .bar:nth-child(3){animation-delay:0.4s}
+        .bar:nth-child(4){animation-delay:0.1s}
+        .bar:nth-child(5){animation-delay:0.3s}
+
+        /* Voice button */
+        @keyframes voice-pulse { 0%,100%{box-shadow:0 0 0 0 rgba(56,189,248,0.4)} 50%{box-shadow:0 0 0 20px rgba(56,189,248,0)} }
+        .voice-active { animation: voice-pulse 1s infinite; background: var(--accent) !important; }
+        .voice-btn { background: var(--surface2); border: 2px solid var(--border); border-radius: 50%; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+        .voice-btn:hover { border-color: var(--accent); }
+
+        /* Obstacle radar mini */
+        @keyframes radar-spin { to { transform: rotate(360deg); } }
+        .radar-line { animation: radar-spin 3s linear infinite; transform-origin: bottom center; }
+
+        /* Map */
+        .map-zone { position: absolute; border-radius: 50%; filter: blur(30px); pointer-events: none; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Tag chips */
+        .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+        .chip-green { background: rgba(52,211,153,0.1); color: var(--green); border: 1px solid rgba(52,211,153,0.2); }
+        .chip-blue { background: rgba(56,189,248,0.1); color: var(--accent); border: 1px solid rgba(56,189,248,0.2); }
+        .chip-orange { background: rgba(251,146,60,0.1); color: var(--warning); border: 1px solid rgba(251,146,60,0.2); }
+        .chip-red { background: rgba(248,113,113,0.1); color: var(--danger); border: 1px solid rgba(248,113,113,0.2); }
+
+        /* Guardian broadcast */
+        @keyframes live-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .live-dot { animation: live-blink 1s infinite; }
+
+        /* Notification toast */
+        #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); z-index: 100; transition: transform 0.3s ease; padding: 12px 20px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; font-size: 13px; font-weight: 500; white-space: nowrap; max-width: 90vw; }
+        #toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* Typing indicator */
+        @keyframes dot-bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-6px)} }
+        .typing-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; animation: dot-bounce 1.2s infinite; display: inline-block; }
+        .typing-dot:nth-child(2){animation-delay:0.2s}
+        .typing-dot:nth-child(3){animation-delay:0.4s}
+
+        /* Tabs */
+        .tab-btn { padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; background: transparent; color: var(--muted); }
+        .tab-btn.active { background: rgba(56,189,248,0.12); color: var(--accent); }
+
+        /* Quick action */
+        .qa-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; padding: 12px; cursor: pointer; transition: all 0.2s; text-align: left; width: 100%; }
+        .qa-btn:hover { border-color: var(--accent); background: rgba(56,189,248,0.05); }
+
+        /* Health score ring */
+        .health-ring { transform: rotate(-90deg); }
+
+        .power-saving-on { box-shadow: 0 0 0 1px rgba(251,146,60,0.25) inset; }
+        .power-pill { display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:11px; font-weight:700; }
+    /* AI Tip of the Day Card */
+.ai-tip-card {
+  margin: 16px 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(56,189,248,0.08), rgba(129,140,248,0.08));
+  border: 1px solid rgba(56,189,248,0.2);
+  box-shadow: 0 8px 25px rgba(56,189,248,0.08);
+  color: var(--text);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: fadeSlideUp 0.7s ease;
+}
+
+.ai-tip-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(56,189,248,0.15);
+}
+
+.ai-tip-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.ai-tip-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.ai-tip-icon {
+  font-size: 20px;
+}
+
+#dailyTipText {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+/* Top notification bell */
+.top-notif-btn{
+  position:absolute;
+  top:-10px;
+  right:0;
+  width:46px;
+  height:46px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:20;
+  box-shadow:0 8px 24px rgba(0,0,0,0.18);
+}
+
+[dir="rtl"] .top-notif-btn{
+  right:auto;
+  left:0;
+}
+
+.top-notif-btn:hover{
+  border-color:rgba(56,189,248,0.35);
+  transform:translateY(-1px);
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(248,113,113,0.5);
+}
+
+.notification-item {
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.notification-item.unread {
+  border-color: rgba(56,189,248,0.22);
+  box-shadow: 0 6px 20px rgba(56,189,248,0.06);
+}
+
+.notification-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notification-content { flex: 1; }
+.notification-title { font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.notification-message { font-size: 12px; line-height: 1.6; color: var(--muted); margin-bottom: 6px; }
+.notification-time { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.notification-empty { text-align: center; padding: 30px 16px; color: var(--muted); }
     </style>
+
 </head>
-<body class="p-4 md:p-8">
+<body>
 
-    <div id="alertModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
-        <div class="modal-bg absolute inset-0" onclick="closeModal()"></div>
-        <div class="card relative bg-white p-6 md:p-8 max-w-sm w-full text-center shadow-2xl">
-            <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
-            <h3 id="modalTitle" class="text-xl font-bold mb-2"></h3>
-            <p id="modalMsg" class="text-slate-500 mb-6 text-sm md:text-base"></p>
-            <button onclick="closeModal()" data-t="dismiss" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold active:bg-slate-800">Dismiss</button>
-        </div>
+<!-- Toast Notification -->
+<div id="toast" role="alert" aria-live="assertive"></div>
+
+<!-- ═══════════════════════════════ MODALS ═══════════════════════════════ -->
+
+<!-- Alert Modal -->
+<div id="alertModal" class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-bg" onclick="closeModal()"></div>
+    <div class="modal-box card p-6 text-center">
+        <div id="modalIcon" class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl"></div>
+        <h3 id="modalTitle" class="text-xl font-bold mb-2"></h3>
+        <p id="modalMsg" class="text-sm mb-6" style="color:var(--muted)"></p>
+        <button onclick="closeModal()" class="w-full py-4 rounded-2xl font-bold text-sm" style="background:var(--accent);color:#000">Dismiss</button>
     </div>
+</div>
 
-    <div id="contactModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="modal-bg absolute inset-0" onclick="closeContactModal()"></div>
-        <div class="card relative bg-white p-6 md:p-8 max-w-md w-full shadow-2xl">
-            <h3 class="text-lg font-bold mb-4 italic text-slate-800" data-t="edit_contact">Edit Emergency Contact</h3>
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1" data-t="full_name">Full Name</label>
-                    <input type="text" id="editName" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" value="Omar">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1" data-t="relationship">Relationship</label>
-                    <input type="text" id="editRel" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" value="Friend">
-                </div>
-                <div>
-                    <label class="text-[10px] font-bold text-slate-400 uppercase ml-1" data-t="phone">Phone Number</label>
-                    <input type="tel" id="editPhone" class="w-full mt-1 p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" value="+966 50 000 0000">
-                </div>
-            </div>
-            <div class="flex gap-3 mt-8">
-                <button onclick="closeContactModal()" data-t="cancel" class="flex-1 py-3 text-slate-500 font-bold">Cancel</button>
-                <button onclick="saveContact()" data-t="save" class="flex-1 py-3 bg-sky-600 text-white rounded-xl font-bold">Save</button>
-            </div>
-        </div>
-    </div>
-
-    <nav class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8 max-w-6xl mx-auto">
-        <div class="flex items-center gap-3 self-start sm:self-center">
-            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl">
-                <img src="logo.png" alt="">
+<!-- Contact Modal -->
+<div id="contactModal" class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="contactTitle">
+    <div class="modal-bg" onclick="closeContactModal()"></div>
+    <div class="modal-box card p-6">
+        <h3 id="contactTitle" class="text-lg font-bold mb-5" data-t="edit_contact">Edit Emergency Contact</h3>
+        <div class="space-y-4">
+            <div>
+                <label class="text-xs font-bold uppercase mb-1 block" style="color:var(--muted)" data-t="full_name">Full Name</label>
+                <input type="text" id="editName" class="w-full p-3 rounded-xl text-sm outline-none" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" value="Yaman">
             </div>
             <div>
-                <h1 class="text-xl font-bold leading-none">GuideAI</h1>
-                <p class="text-[9px] text-slate-500 uppercase tracking-widest font-bold" data-t="subtitle">Companion App</p>
+                <label class="text-xs font-bold uppercase mb-1 block" style="color:var(--muted)" data-t="relationship">Relationship</label>
+                <input type="text" id="editRel" class="w-full p-3 rounded-xl text-sm outline-none" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" value="Friend">
+            </div>
+            <div>
+                <label class="text-xs font-bold uppercase mb-1 block" style="color:var(--muted)" data-t="phone">Phone</label>
+                <input type="tel" id="editPhone" class="w-full p-3 rounded-xl text-sm outline-none" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" value="+970 59 000 0000">
             </div>
         </div>
-        
-        <div class="flex items-center justify-between w-full sm:w-auto gap-2">
-            <button onclick="toggleLanguage()" class="bg-white border border-slate-200 px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-50 flex items-center gap-2">
-                <i class="fas fa-globe text-sky-500"></i>
-                <span id="langBtnText">العربية</span>
-            </button>
-            <button onclick="triggerSOS()" class="sos-btn text-white px-5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2">
-                <i class="fas fa-circle-exclamation"></i> <span data-t="sos_btn">SOS Emergency</span>
-            </button>
+        <div class="flex gap-3 mt-6">
+            <button onclick="closeContactModal()" class="flex-1 py-3 rounded-xl font-bold text-sm" style="color:var(--muted)">Cancel</button>
+            <button onclick="saveContact()" class="flex-1 py-3 rounded-xl font-bold text-sm" style="background:var(--accent);color:#000">Save</button>
         </div>
-    </nav>
-
-    <main class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
-        
-        <div class="lg:col-span-4 space-y-4">
-            <div class="card p-6 text-center">
-                <div class="relative inline-block mb-4">
-                    <div class="w-32 h-40 bg-slate-50 rounded-3xl flex items-center justify-center border border-slate-100">
-                        <i class="fas fa-vest text-5xl text-slate-300"></i>
-                    </div>
-                    <span id="statusIndicator" class="absolute top-2 right-2 bg-green-500 w-4 h-4 rounded-full border-4 border-white"></span>
-                </div>
-                <h2 class="text-lg font-bold" data-t="vest_name">Guidexa Smart Vest</h2>
-                <p id="connStatus" class="text-slate-500 text-xs mb-6" data-t="connected">Connected</p>
-                
-                <div class="grid grid-cols-3 gap-2 mb-6">
-                    <button onclick="setMode('urban')" id="btn-urban" class="mode-btn p-2 rounded-xl border border-slate-100 hover:bg-sky-50 transition">
-                        <i class="fas fa-city text-slate-400 mb-1"></i>
-                        <p class="text-[8px] font-bold uppercase" data-t="mode_urban">Urban</p>
-                    </button>
-                    <button onclick="setMode('park')" id="btn-park" class="mode-btn p-2 rounded-xl border border-slate-100 hover:bg-sky-50 transition">
-                        <i class="fas fa-tree text-slate-400 mb-1"></i>
-                        <p class="text-[8px] font-bold uppercase" data-t="mode_park">Park</p>
-                    </button>
-                    <button onclick="setMode('home')" id="btn-home" class="mode-btn p-2 rounded-xl border border-slate-100 hover:bg-sky-50 transition">
-                        <i class="fas fa-house text-slate-400 mb-1"></i>
-                        <p class="text-[8px] font-bold uppercase" data-t="mode_home">Home</p>
-                    </button>
-                </div>
-
-                <div class="space-y-4 text-left px-2 mb-6">
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-600 font-medium"><i class="fas fa-battery-three-quarters mr-2 text-sky-500"></i> <span data-t="battery">Battery</span></span>
-                        <span id="batteryVal" class="font-bold">72%</span>
-                    </div>
-                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div id="batteryBar" class="bg-sky-500 h-full w-[72%] transition-all"></div>
-                    </div>
-                </div>
-                <button onclick="pingVest()" class="w-full py-3 border-2 border-slate-100 rounded-2xl text-xs font-bold text-slate-600 active:bg-slate-50" data-t="ping_btn">Ping Vest</button>
-            </div>
-
-            <div id="guardianCard" class="card p-5 bg-slate-900 text-white">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xs font-bold uppercase opacity-80" data-t="guardian_mode">Guardian Mode</h3>
-                    <div id="liveIndicator" class="hidden h-2 w-2 relative"><span class="animate-ping absolute inset-0 rounded-full bg-sky-400 opacity-75"></span><span class="bg-sky-500 rounded-full h-2 w-2 relative"></span></div>
-                </div>
-                <p id="guardianText" class="text-sm mb-4"><span data-t="sharing_with">Sharing path with</span> <span id="displayName" class="font-bold underline cursor-pointer" onclick="openContactModal()">Omar</span></p>
-                <button id="guardianBtn" onclick="toggleGuardian()" class="w-full py-2 bg-white/10 rounded-lg text-[10px] font-bold" data-t="start_broadcasting">START BROADCASTING</button>
-            </div>
-            <div class="card p-6 bg-slate-900 text-white relative overflow-hidden mt-4">
-    <div class="relative z-10">
-        <h3 class="text-[10px] font-bold text-sky-400 uppercase tracking-widest mb-2" data-t="dyk_title">Did You Know?</h3>
-        <p class="text-xs leading-relaxed opacity-90" data-t="dyk_fact">
-            100% of this vest is made from recycled rPET from 25 plastic bottles per vest.
-        </p>
     </div>
-    <i class="fas fa-recycle absolute -right-2 -bottom-2 text-5xl text-white/5"></i>
 </div>
-            
+
+<div id="redirectModal" class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="redirectTitle">
+    <div class="modal-bg" onclick="closeRedirectModal()"></div>
+    <div class="modal-box card p-8 text-center border-accent/30" style="background:var(--surface)">
+        <div class="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center text-3xl" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+            <i class="fas fa-external-link-alt text-black"></i>
+        </div>
+        <h3 id="redirectTitle" class="text-xl font-bold mb-3">Visit Guidexa Main</h3>
+        <p class="text-sm mb-8 leading-relaxed" style="color:var(--muted)">
+            You are about to leave GuideAI and head to our main corporate portal to explore our full range of sustainable technology.
+        </p>
+        <div class="flex flex-col gap-3">
+            <a href="https://guidexa.org" target="_blank" class="w-full py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-2" style="background:var(--accent);color:#000">
+                Proceed to guidexa.org <i class="fas fa-arrow-right text-xs"></i>
+            </a>
+            <button onclick="closeRedirectModal()" class="w-full py-3 rounded-xl font-bold text-xs" style="color:var(--muted)">
+                Stay in Companion App
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Notification Center Modal -->
+<div id="notificationModal" class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="notificationTitle">
+    <div class="modal-bg" onclick="closeNotificationCenter()"></div>
+    <div class="modal-box card p-0 overflow-hidden" style="max-width:520px; max-height:85vh;">
+        
+        <div class="p-5 flex items-center justify-between" style="border-bottom:1px solid var(--border); background:var(--surface)">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.2)">
+                    <i class="fas fa-bell" style="color:var(--accent)"></i>
+                </div>
+                <div>
+                    <h3 id="notificationTitle" class="text-base font-bold">Notifications</h3>
+                    <p class="text-xs" style="color:var(--muted)">Real events from your app</p>
+                </div>
+            </div>
+            <button onclick="closeNotificationCenter()" class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:var(--surface2); border:1px solid var(--border)">
+                <i class="fas fa-times" style="color:var(--muted)"></i>
+            </button>
         </div>
 
-        
+        <div class="px-5 py-3 flex items-center justify-between gap-2" style="border-bottom:1px solid var(--border); background:var(--surface2)">
+            <button onclick="markAllNotificationsRead()" class="text-xs font-bold px-3 py-2 rounded-xl" style="background:rgba(56,189,248,0.1); color:var(--accent); border:1px solid rgba(56,189,248,0.2)">
+                Mark all as read
+            </button>
+            <button onclick="clearNotifications()" class="text-xs font-bold px-3 py-2 rounded-xl" style="background:rgba(248,113,113,0.1); color:var(--danger); border:1px solid rgba(248,113,113,0.2)">
+                Clear all
+            </button>
+        </div>
 
-        <div class="lg:col-span-8 space-y-4 md:space-y-6">
-            <div class="card p-6">
-                <div class="flex justify-between items-start mb-6">
+        <div id="notificationList" class="p-4 space-y-3 overflow-y-auto" style="max-height:60vh;"></div>
+    </div>
+</div>
+
+
+
+<!-- Instagram Redirect Modal -->
+<div id="instagramModal" class="modal-wrap" role="dialog" aria-modal="true" aria-labelledby="instagramTitle">
+    <div class="modal-bg" onclick="closeInstagramModal()"></div>
+    <div class="modal-box card p-0 overflow-hidden" style="max-width:420px;">
+
+        <div class="p-5 text-center" style="border-bottom:1px solid var(--border); background:var(--surface)">
+            <div class="mx-auto mb-3 w-14 h-14 rounded-2xl flex items-center justify-center" style="background:rgba(225,48,108,0.10); border:1px solid rgba(225,48,108,0.18);">
+                <i class="fab fa-instagram text-xl" style="color:#E1306C;"></i>
+            </div>
+            <h3 id="instagramTitle" class="text-base font-bold">Do you want to visit our Instagram page?</h3>
+            <p class="text-xs mt-2" style="color:var(--muted);">
+                Follow GuideAI for updates, new features, and smart safety tips.
+            </p>
+        </div>
+
+        <div class="p-5 flex flex-col gap-3">
+            <button onclick="goToInstagram()" class="w-full py-3 rounded-2xl text-sm font-bold flex items-center justify-center gap-2" style="background:#E1306C; color:white; border:none;">
+                <i class="fab fa-instagram"></i>
+                Go to our page
+            </button>
+
+            <button onclick="closeInstagramModal()" class="w-full py-3 rounded-2xl text-sm font-bold" style="background:#f3e8ee; color:#7a5565; border:1px solid #ead7df;">
+                Stay on this site
+            </button>
+        </div>
+    </div>
+</div>
+
+
+<!-- ═══════════════════════════════ AI CHAT PANEL ═══════════════════════════════ -->
+<div id="aiPanel" role="dialog" aria-modal="true" aria-label="GuideAI Assistant">
+    <!-- Header -->
+    <div style="background:var(--surface);border-bottom:1px solid var(--border)" class="px-4 py-3 flex items-center gap-3 flex-shrink-0">
+        <button onclick="closeAI()" class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:var(--surface2)" aria-label="Close AI assistant">
+            <i class="fas fa-arrow-left" style="color:var(--muted)"></i>
+        </button>
+        <div class="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+            <i class="fas fa-brain text-sm text-black"></i>
+        </div>
+        <div class="flex-1">
+            <p class="text-sm font-bold">GuideAI Assistant</p>
+            <p class="text-xs" style="color:var(--green)">● Online — Vest connected</p>
+        </div>
+        <button onclick="clearChat()" class="text-xs font-medium px-3 py-1.5 rounded-lg" style="color:var(--muted);background:var(--surface2)" aria-label="Clear conversation">Clear</button>
+    </div>
+
+    <!-- Quick prompts -->
+    <div id="quickPromptsBar" class="px-4 pt-3 pb-2 flex gap-2 overflow-x-auto flex-shrink-0" style="scrollbar-width:none">
+        <button onclick="sendQuick('What obstacles are near me right now?')" class="flex-shrink-0 text-xs font-medium px-3 py-2 rounded-xl" style="background:var(--surface2);border:1px solid var(--border);color:var(--accent)" aria-label="Ask about obstacles">🚧 Nearby obstacles</button>
+        <button onclick="sendQuick('How is my vest performing today?')" class="flex-shrink-0 text-xs font-medium px-3 py-2 rounded-xl" style="background:var(--surface2);border:1px solid var(--border);color:var(--accent)">🔋 Vest status</button>
+        <button onclick="sendQuick('Summarize my journey today')" class="flex-shrink-0 text-xs font-medium px-3 py-2 rounded-xl" style="background:var(--surface2);border:1px solid var(--border);color:var(--accent)">🗺️ Today's journey</button>
+        <button onclick="sendQuick('What is the safest route for me right now?')" class="flex-shrink-0 text-xs font-medium px-3 py-2 rounded-xl" style="background:var(--surface2);border:1px solid var(--border);color:var(--accent)">🧭 Safe route</button>
+        <button onclick="sendQuick('Are there any caution areas ahead?')" class="flex-shrink-0 text-xs font-medium px-3 py-2 rounded-xl" style="background:var(--surface2);border:1px solid var(--border);color:var(--accent)">⚠️ Caution areas</button>
+    </div>
+
+    <!-- Messages -->
+    <div id="chatMessages" class="flex-1 overflow-y-auto px-4 py-2 space-y-3" aria-live="polite" aria-label="Conversation">
+        <!-- Welcome message -->
+        <div class="chat-bubble-ai">
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+                    <i class="fas fa-brain" style="font-size:8px;color:#000"></i>
+                </div>
+                <span class="text-xs font-bold" style="color:var(--accent)">GuideAI</span>
+            </div>
+            <p class="text-sm leading-relaxed">Hello! I'm your GuideAI assistant, connected to your Guidexa Smart Vest. I can help you understand your surroundings, check your vest's sensors, plan safe routes, or answer any questions about your journey. How can I assist you today?</p>
+        </div>
+    </div>
+
+    <!-- Input bar -->
+    <div class="px-4 py-3 flex-shrink-0" style="background:var(--surface);border-top:1px solid var(--border)">
+        <div class="flex gap-2 items-center">
+            <button id="voiceBtn" class="voice-btn flex-shrink-0" onclick="toggleVoice()" aria-label="Voice input">
+                <i id="voiceIcon" class="fas fa-microphone" style="color:var(--accent)"></i>
+            </button>
+            <input id="chatInput" type="text" placeholder="Ask about your surroundings..." 
+                class="flex-1 px-4 py-3 rounded-2xl text-sm outline-none"
+                style="background:var(--surface2);border:1px solid var(--border);color:var(--text)"
+                onkeydown="if(event.key==='Enter')sendMessage()"
+                aria-label="Type your message">
+            <button onclick="sendMessage()" class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:var(--accent)" aria-label="Send message">
+                <i class="fas fa-paper-plane text-sm text-black"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════ NAV ═══════════════════════════════ -->
+<nav class="px-4 py-3" role="banner">
+    <div class="max-w-5xl mx-auto flex justify-between items-center gap-3 relative">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+                <i class="fas fa-eye-slash text-black text-sm"></i>
+            </div>
+            <div>
+                <h1 class="text-base font-bold leading-none">GuideAI</h1>
+                <p class="text-[9px] font-bold uppercase tracking-widest" style="color:var(--muted)" data-t="subtitle">Companion App</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <!-- AI Chat Trigger -->
+            <button onclick="openAI()" class="flex items-center gap-2 px-3 py-2.5 rounded-xl font-bold text-xs" style="background:linear-gradient(135deg,rgba(56,189,248,0.15),rgba(129,140,248,0.15));border:1px solid rgba(56,189,248,0.3);color:var(--accent)" aria-label="Open AI assistant">
+                <i class="fas fa-brain"></i> <span class="hidden sm:inline">Ask AI</span>
+            </button>
+            <button onclick="toggleLanguage()" class="px-3 py-2.5 rounded-xl text-xs font-bold" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" aria-label="Switch language">
+                <i class="fas fa-globe mr-1.5" style="color:var(--accent)"></i><span id="langBtnText">العربية</span>
+            </button>
+            <button onclick="triggerSOS()" class="sos-btn text-white px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5" aria-label="Trigger SOS emergency">
+                <i class="fas fa-circle-exclamation"></i> <span data-t="sos_btn">SOS</span>
+            </button>
+        </div> 
+        <button onclick="toggleTheme()" class="p-2 rounded-xl hover:bg-white/5 transition-colors" id="themeBtn">
+    <i class="fas fa-sun text-warning" id="themeIcon"></i>
+</button>
+    </div>
+    <!-- Top Fixed Notification Bell -->
+<button onclick="openNotificationCenter()" id="notifBell" class="top-notif-btn" aria-label="Open notifications">
+    <i class="fas fa-bell"></i>
+    <span id="notifBadge" class="notif-badge hidden">0</span>
+</button>
+</nav>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<main class="max-w-5xl mx-auto px-4 py-4 pb-8 relative z-10" role="main">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+        <!-- ── LEFT COLUMN ── -->
+        <div class="lg:col-span-4 space-y-4">
+
+            <!-- Vest Card -->
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="dot-green" aria-hidden="true"></div>
+                        <span class="text-xs font-bold" style="color:var(--green)" data-t="connected">Connected</span>
+                    </div>
+                    <span class="chip chip-blue text-xs">v2.1.4</span>
+                </div>
+
+                <!-- Vest Visual -->
+                <div class="flex justify-center mb-4">
+                    <div class="relative">
+                        <div class="w-24 h-28 rounded-2xl flex items-center justify-center vest-pulse" style="background:rgba(56,189,248,0.08);border:2px solid rgba(56,189,248,0.25)" aria-label="Guidexa Smart Vest illustration">
+                            <i class="fas fa-vest text-4xl" style="color:rgba(56,189,248,0.5)"></i>
+                        </div>
+                        <span id="statusIndicator" class="absolute top-1.5 right-1.5 w-3 h-3 rounded-full" style="background:var(--green);box-shadow:0 0 8px var(--green)" aria-label="Vest online"></span>
+                    </div>
+                </div>
+
+                <h2 class="text-center text-sm font-bold mb-1" data-t="vest_name">Guidexa Smart Vest</h2>
+                <p class="text-center text-xs mb-4" style="color:var(--muted)" id="connStatus" data-t="connected">Connected</p>
+
+                <!-- Modes -->
+                <div class="grid grid-cols-3 gap-2 mb-4" role="group" aria-label="Navigation mode">
+                    <button onclick="setMode('urban')" id="btn-urban" class="mode-btn" aria-label="Urban mode">
+                        <i class="fas fa-city"></i><span data-t="mode_urban">Urban</span>
+                    </button>
+                    <button onclick="setMode('park')" id="btn-park" class="mode-btn" aria-label="Park mode">
+                        <i class="fas fa-tree"></i><span data-t="mode_park">Park</span>
+                    </button>
+                    <button onclick="setMode('home')" id="btn-home" class="mode-btn active" aria-label="Home mode">
+                        <i class="fas fa-house"></i><span data-t="mode_home">Home</span>
+                    </button>
+                </div>
+
+                <!-- Battery -->
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-medium flex items-center gap-1.5" style="color:var(--muted)">
+                            <i class="fas fa-battery-three-quarters" style="color:var(--accent)"></i> <span data-t="battery">Battery</span>
+                        </span>
+                        <span class="text-xs font-bold" style="color:var(--accent)" id="batteryVal">72%</span>
+                    </div>
+                    <p id="batteryTimeRemaining" class="text-[11px] mt-1" style="color:var(--muted)">Estimated time left: 3h 25m</p>
+                    <div class="batt-bar" aria-label="Battery level 72%">
+                        <div id="batteryBar" class="batt-fill" style="width:72%"></div>
+                    </div>
+                </div>
+
+                <button onclick="pingVest()" class="w-full py-3 rounded-2xl text-xs font-bold transition-all" style="background:var(--surface2);border:1px solid var(--border);color:var(--text)" data-t="ping_btn" aria-label="Ping vest to make it vibrate">
+                    <i class="fas fa-satellite-dish mr-2" style="color:var(--accent)"></i>Ping Vest
+                </button>
+            </div>
+
+            <!-- Guardian Mode -->
+            <div id="guardianCard" class="card p-5" style="background:var(--surface2)">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold uppercase tracking-wider" style="color:var(--muted)" data-t="guardian_mode">Guardian Mode</h3>
+                    <div id="liveIndicator" class="hidden items-center gap-1.5">
+                        <div class="w-2 h-2 rounded-full live-dot" style="background:var(--accent)"></div>
+                        <span class="text-xs font-bold" style="color:var(--accent)">LIVE</span>
+                    </div>
+                </div>
+                <p class="text-sm mb-4"><span data-t="sharing_with">Sharing path with</span> <button class="font-bold underline" onclick="openContactModal()" id="displayName" aria-label="Edit guardian contact">Yaman</button></p>
+                <button id="guardianBtn" onclick="toggleGuardian()" class="w-full py-2.5 rounded-xl text-xs font-bold transition-all" style="background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.2);color:var(--accent)" data-t="start_broadcasting" aria-label="Toggle guardian broadcasting">
+                    START BROADCASTING
+                </button>
+            </div>
+
+            <!-- Did You Know -->
+            <div class="card p-5 relative overflow-hidden" style="background:var(--surface2)">
+                <i class="fas fa-recycle absolute -right-2 -bottom-2 text-6xl" style="color:rgba(52,211,153,0.06)" aria-hidden="true"></i>
+                <p class="text-xs font-bold uppercase tracking-widest mb-2" style="color:var(--green)" data-t="dyk_title">Did You Know?</p>
+                <p class="text-xs leading-relaxed mb-4" style="color:var(--muted)" data-t="dyk_fact">100% of this vest is made from recycled rPET — 25 plastic bottles per vest.</p>
+                <button onclick="openRedirectModal()" class="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all mb-3" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--muted)">
+    Visit Corporate Portal
+</button>
+                <button onclick="openInstagramModal()" class="w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2" style="background:rgba(225,48,108,0.08);border:1px solid rgba(225,48,108,0.18);color:#E1306C">
+                    <i class="fab fa-instagram"></i>
+                    Visit Our Instagram
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ── RIGHT COLUMN ── -->
+        <div class="lg:col-span-8 space-y-4">
+
+
+            <!-- Live Monitoring -->
+            <div class="card p-4 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full dot-ping" style="background:var(--green)"></div>
+                    <p class="text-sm font-bold">Live Monitoring Active</p>
+                </div>
+                <div class="flex items-center gap-4 text-xs" style="color:var(--muted)">
+                    <span><i class="fas fa-location-dot mr-1" style="color:var(--accent)"></i> Tulkarm</span>
+                    <span><i class="fas fa-temperature-half mr-1" style="color:var(--warning)"></i> <span id="tempVal">18°C</span></span>
+                    <span><i class="fas fa-clock mr-1"></i> <span id="liveClock">--:--</span></span>
+                </div>
+            </div>
+
+            <!-- Smart Power Mode -->
+            <div id="powerCard" class="card p-5">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold">Smart Power Mode</h3>
+                    <span id="powerStatus" class="power-pill" style="background:rgba(255,255,255,0.04);color:var(--muted);border:1px solid var(--border)">OFF</span>
+                </div>
+                <p id="powerDesc" class="text-xs mb-4" style="color:var(--muted)">Optimize battery usage by reducing non-essential power consumption.</p>
+                <button onclick="togglePowerSaving()" id="powerBtn" class="w-full py-3 rounded-2xl font-bold text-sm" style="background:var(--warning);color:white">Enable Power Saving</button>
+            </div>
+            <!-- AI Tip of the Day -->
+<div class="ai-tip-card">
+    <div class="ai-tip-header">
+        <span class="ai-tip-icon">🧠</span>
+        <h3>AI Tip of the Day</h3>
+    </div>
+    <p id="dailyTipText">Loading smart tip...</p>
+</div>
+            <!-- AI Assistant Banner -->
+            <button onclick="openAI()" class="w-full card p-4 flex items-center gap-4 hover:border-opacity-50 transition-all text-left group" style="border-color:rgba(56,189,248,0.3);background:linear-gradient(135deg,rgba(56,189,248,0.05),rgba(129,140,248,0.05))" aria-label="Open GuideAI intelligent assistant">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+                    <i class="fas fa-brain text-black"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="font-bold text-sm">GuideAI Intelligent Assistant</p>
+                    <p class="text-xs mt-0.5" style="color:var(--muted)">Ask about obstacles, routes, vest status, or anything around you</p>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <span class="chip chip-green text-xs">Active</span>
+                    <i class="fas fa-chevron-right text-xs" style="color:var(--muted)"></i>
+                </div>
+            </button>
+
+            <!-- System Health -->
+            <div class="card p-5">
+                <div class="flex justify-between items-start mb-5">
                     <div>
-                        <h3 class="text-base font-bold" data-t="diag_title">System Health</h3>
-                        <p class="text-xs text-slate-500" data-t="diag_subtitle">Real-time sensor performance</p>
+                        <h3 class="text-sm font-bold" data-t="diag_title">System Health</h3>
+                        <p class="text-xs mt-0.5" style="color:var(--muted)" data-t="diag_subtitle">Real-time sensor performance</p>
                     </div>
                     <div class="text-right">
-                        <span class="text-2xl font-black text-sky-600">98%</span>
-                        <p class="text-[10px] uppercase font-bold text-green-500" data-t="optimal">Optimal</p>
+                        <div class="relative inline-flex items-center justify-center">
+                            <svg width="52" height="52" class="health-ring" aria-label="System health 98%">
+                                <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="4"/>
+                                <circle cx="26" cy="26" r="22" fill="none" stroke="var(--green)" stroke-width="4"
+                                    stroke-dasharray="138.2" stroke-dashoffset="2.8" stroke-linecap="round"/>
+                            </svg>
+                            <span class="absolute text-xs font-bold" style="color:var(--green)">98%</span>
+                        </div>
+                        <p class="text-xs font-bold mt-1" style="color:var(--green)" data-t="optimal">Optimal</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase"><span data-t="tof_sensors">ToF Sensors</span><span class="text-green-500" data-t="active">Active</span></div>
-                        <div class="flex gap-1 h-8 items-end"><div class="bg-sky-500 w-full h-3/4 rounded-sm"></div><div class="bg-sky-500 w-full h-1/2 rounded-sm"></div><div class="bg-sky-500 w-full h-full rounded-sm"></div><div class="bg-sky-500 w-full h-2/3 rounded-sm"></div></div>
+
+                <div class="grid grid-cols-3 gap-3">
+                    <!-- ToF Sensors -->
+                    <div class="card2 p-3">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span data-t="tof_sensors" style="color:var(--muted)">ToF Sensors</span>
+                            <span style="color:var(--green)" data-t="active">Active</span>
+                        </div>
+                        <div class="flex gap-0.5 h-7 items-end">
+                            <div class="bar" style="animation-duration:0.8s"></div>
+                            <div class="bar"></div>
+                            <div class="bar" style="animation-duration:1s"></div>
+                            <div class="bar"></div>
+                            <div class="bar" style="animation-duration:0.9s"></div>
+                        </div>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase"><span data-t="haptics">Haptics</span><span class="text-green-500" data-t="ready">Ready</span></div>
-                        <div class="flex gap-1 h-8 items-center justify-center"><i class="fas fa-wave-square text-sky-300 animate-pulse"></i></div>
+                    <!-- Haptics -->
+                    <div class="card2 p-3">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span data-t="haptics" style="color:var(--muted)">Haptics</span>
+                            <span style="color:var(--green)" data-t="ready">Ready</span>
+                        </div>
+                        <div class="flex items-center justify-center h-7">
+                            <i class="fas fa-wave-square text-xl" style="color:var(--accent);opacity:0.8" aria-hidden="true"></i>
+                        </div>
                     </div>
-                    <div class="bg-slate-50 p-3 rounded-2xl border border-slate-100">
-                        <div class="flex justify-between text-[10px] font-bold mb-2 uppercase"><span data-t="network">Network</span><span class="text-sky-500">42ms</span></div>
-                        <div class="flex gap-1 h-8 items-end justify-center text-sky-500"><i class="fas fa-signal"></i></div>
+                    <!-- Network -->
+                    <div class="card2 p-3">
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span data-t="network" style="color:var(--muted)">Network</span>
+                            <span style="color:var(--accent)">42ms</span>
+                        </div>
+                        <div class="flex items-center justify-center h-7">
+                            <i class="fas fa-signal text-lg" style="color:var(--accent)" aria-hidden="true"></i>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-6 overflow-hidden">
-                <div class="flex justify-between items-center mb-6">
+            <!-- Heatmap -->
+            <div class="card p-5 overflow-hidden">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <h3 class="text-base font-bold" data-t="heatmap_title">Safe Paths Heatmap</h3>
-                        <p class="text-xs text-slate-500 font-medium" data-t="heatmap_subtitle">Visualizing frequent obstacle zones</p>
+                        <h3 class="text-sm font-bold" data-t="heatmap_title">Safe Paths Heatmap</h3>
+                        <p class="text-xs mt-0.5" style="color:var(--muted)" data-t="heatmap_subtitle">Frequent obstacle zones</p>
                     </div>
                     <div class="flex gap-3">
-                        <span class="flex items-center gap-1.5 text-[10px] font-black text-sky-600 uppercase tracking-tighter">
-                            <span class="w-3 h-3 rounded-full bg-sky-500 shadow-[0_0_8px_rgba(14,165,233,0.6)]"></span> <span data-t="clear">Clear</span>
-                        </span>
-                        <span class="flex items-center gap-1.5 text-[10px] font-black text-orange-600 uppercase tracking-tighter">
-                            <span class="w-3 h-3 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span> <span data-t="warning">Warning</span>
-                        </span>
+                        <span class="chip chip-blue"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--accent)"></span><span data-t="clear">Clear</span></span>
+                        <span class="chip chip-orange"><span class="w-1.5 h-1.5 rounded-full" style="background:var(--warning)"></span><span data-t="warning">Warning</span></span>
                     </div>
                 </div>
-                
-                <div class="relative w-full h-64 bg-slate-900 rounded-2xl overflow-hidden border-2 border-slate-200">
-                    <img src="map.png" alt="Map" class="absolute inset-0 w-full h-full object-cover opacity-50 grayscale invert">
-                    <div class="absolute top-1/4 left-1/4 w-32 h-32 bg-sky-500/30 blur-3xl rounded-full"></div>
-                    <div class="absolute top-1/2 right-1/4 w-24 h-24 bg-orange-500/30 blur-2xl rounded-full"></div>
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center">
-                        <div class="w-5 h-5 bg-sky-500 border-2 border-white rounded-full shadow-[0_0_15px_rgba(14,165,233,1)] user-pulse"></div>
-                        <div class="mt-2 bg-slate-800/90 backdrop-blur-sm px-3 py-1 rounded-full border border-slate-600">
-                            <p class="text-[8px] font-black text-white uppercase tracking-widest" data-t="you_are_here">You Are Here</p>
+
+                <div class="relative w-full h-56 rounded-2xl overflow-hidden" style="background:#060d1a;border:1px solid var(--border)" role="img" aria-label="Map showing safe paths and obstacle zones. You are at center. Paris Street is a safe frequently traveled route. Dr. Thabet Thabet Roundabout is a caution area.">
+                    <!-- Map blobs -->
+                    <div class="map-zone" style="width:160px;height:160px;background:rgba(56,189,248,0.18);top:10%;left:10%"></div>
+                    <div class="map-zone" style="width:100px;height:100px;background:rgba(251,146,60,0.22);top:40%;right:15%"></div>
+                    <div class="map-zone" style="width:80px;height:80px;background:rgba(56,189,248,0.12);bottom:15%;left:30%"></div>
+                    <!-- Grid lines overlay -->
+                    <div class="absolute inset-0" style="background-image:linear-gradient(rgba(56,189,248,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.04) 1px,transparent 1px);background-size:30px 30px"></div>
+                    <!-- User location -->
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1.5">
+                        <div class="w-4 h-4 rounded-full border-2 border-white vest-pulse" style="background:var(--accent)" aria-hidden="true"></div>
+                        <div class="px-2.5 py-1 rounded-full" style="background:rgba(10,15,30,0.9);border:1px solid rgba(56,189,248,0.4)">
+                            <p class="text-white font-black uppercase tracking-widest" style="font-size:7px" data-t="you_are_here">You Are Here</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-6 grid grid-cols-2 gap-4">
-                    <div class="bg-sky-50 p-3 rounded-xl border border-sky-100 text-left">
-                        <p class="text-[9px] font-black text-sky-600 uppercase" data-t="most_traveled">Most Traveled</p>
-                        <p class="text-sm font-bold text-slate-800 italic" data-t="park_trail">Paris Street</p>
+                <div class="mt-4 grid grid-cols-2 gap-3">
+                    <div class="card2 p-3">
+                        <p class="text-xs font-black uppercase mb-1" style="color:var(--accent)" data-t="most_traveled">Most Traveled</p>
+                        <p class="text-sm font-bold" data-t="park_trail">Paris Street</p>
                     </div>
-                    <div class="bg-orange-50 p-3 rounded-xl border border-orange-100 text-left">
-                        <p class="text-[9px] font-black text-orange-600 uppercase" data-t="caution_area">Caution Area</p>
-                        <p class="text-sm font-bold text-slate-800 italic" data-t="construction">Dr. Thabet Thabet Roundabout</p>
+                    <div class="card2 p-3">
+                        <p class="text-xs font-black uppercase mb-1" style="color:var(--warning)" data-t="caution_area">Caution Area</p>
+                        <p class="text-sm font-bold" data-t="construction">Dr. Thabet Roundabout</p>
                     </div>
                 </div>
             </div>
 
-            <div class="card p-6 md:p-8">
-                <h3 class="text-base font-bold mb-6 flex items-center gap-2"><i class="fas fa-sliders text-sky-500"></i> <span data-t="calib_title">Calibration</span></h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                    <div class="space-y-3">
-                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="vib_label">VIBRATION</label><span id="vibVal" class="text-sky-600 text-xs font-bold">80%</span></div>
-                        <input type="range" id="sl-vib" class="slider" oninput="updateVal('vibVal', this.value + '%')">
+            <!-- Calibration -->
+            <div class="card p-5">
+                <h3 class="text-sm font-bold mb-5 flex items-center gap-2" data-t="calib_title">
+                    <i class="fas fa-sliders" style="color:var(--accent)" aria-hidden="true"></i> Calibration
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <label for="sl-vib" class="text-xs font-bold uppercase" style="color:var(--muted)" data-t="vib_label">Vibration</label>
+                            <span id="vibVal" class="text-xs font-bold" style="color:var(--accent)">30%</span>
+                        </div>
+                        <input type="range" id="sl-vib" class="slider" min="0" max="100" value="30" oninput="updateVal('vibVal', this.value+'%')" aria-label="Vibration intensity">
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="dist_label">DISTANCE</label><span id="distVal" class="text-sky-600 text-xs font-bold">2.5m</span></div>
-                        <input type="range" id="sl-dist" class="slider" min="0.5" max="5" step="0.1" oninput="updateVal('distVal', this.value + 'm')">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <label for="sl-dist" class="text-xs font-bold uppercase" style="color:var(--muted)" data-t="dist_label">Distance</label>
+                            <span id="distVal" class="text-xs font-bold" style="color:var(--accent)">0.8m</span>
+                        </div>
+                        <input type="range" id="sl-dist" class="slider" min="0.5" max="5" step="0.1" value="0.8" oninput="updateVal('distVal', this.value+'m')" aria-label="Detection distance">
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="sens_label">SENSITIVITY</label><span id="sensVal" class="text-sky-600 text-xs font-bold">High</span></div>
-                        <input type="range" id="sl-sens" class="slider" min="1" max="3" oninput="updateSensitivity(this.value)">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <label for="sl-sens" class="text-xs font-bold uppercase" style="color:var(--muted)" data-t="sens_label">Sensitivity</label>
+                            <span id="sensVal" class="text-xs font-bold" style="color:var(--accent)">Medium</span>
+                        </div>
+                        <input type="range" id="sl-sens" class="slider" min="1" max="3" value="2" oninput="updateSensitivity(this.value)" aria-label="Sensor sensitivity">
                     </div>
-                    <div class="space-y-3">
-                        <div class="flex justify-between"><label class="text-xs font-bold text-slate-500 uppercase" data-t="snd_label">SOUND</label><span id="sndVal" class="text-sky-600 text-xs font-bold">40%</span></div>
-                        <input type="range" id="sl-snd" class="slider" oninput="updateVal('sndVal', this.value + '%')">
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <label for="sl-snd" class="text-xs font-bold uppercase" style="color:var(--muted)" data-t="snd_label">Sound</label>
+                            <span id="sndVal" class="text-xs font-bold" style="color:var(--accent)">20%</span>
+                        </div>
+                        <input type="range" id="sl-snd" class="slider" min="0" max="100" value="20" oninput="updateVal('sndVal', this.value+'%')" aria-label="Sound feedback level">
                     </div>
                 </div>
             </div>
+
         </div>
-    </main>
+    </div>
+</main>
 
-    <script>
-        const translations = {
-            en: {
-                subtitle: "Companion App", sos_btn: "SOS", vest_name: "Guidexa Smart Vest", connected: "Connected", battery: "Battery",
-                ping_btn: "Ping Vest", calib_title: "Calibration", vib_label: "Vibration", dist_label: "Distance", sens_label: "Sensitivity",
-                snd_label: "Sound", diag_title: "System Health", diag_subtitle: "Real-time sensor performance", optimal: "Optimal",
-                tof_sensors: "ToF Sensors", active: "Active", haptics: "Haptics", ready: "Ready", network: "Network",
-                heatmap_title: "Safe Paths Heatmap", heatmap_subtitle: "Visualizing frequent obstacle zones", clear: "Clear", warning: "Warning",
-                you_are_here: "You Are Here", most_traveled: "Most Traveled", park_trail: "Paris Street",
-                caution_area: "Caution Area", construction: "Dr. Thabet Thabet Roundabout", high: "High", med: "Medium", low: "Low", dismiss: "Dismiss",
-                edit_contact: "Edit Contact", full_name: "Full Name", relationship: "Relationship", phone: "Phone Number", cancel: "Cancel", save: "Save",
-                mode_urban: "Urban", mode_park: "Park", mode_home: "Home", guardian_mode: "Guardian Mode", sharing_with: "Sharing path with",
-                start_broadcasting: "START BROADCASTING", stop_broadcasting: "STOP BROADCASTING",
-                sos_alert_title: "Emergency Sent", sos_alert_msg: "Guardian {name} has been notified with your GPS.", ping_alert_title: "Ping Sent", ping_alert_msg: "Vest is vibrating now.",
-                dyk_title: "Did You Know?",
-                 dyk_fact: "100% of this vest is made from recycled rPET from 25 plastic bottles per vest."
-            },
-            ar: {
-                subtitle: "التطبيق الملحق", sos_btn: "طوارئ", vest_name: "سترة Guidexa الذكية", connected: "متصل الآن", battery: "البطارية",
-                ping_btn: "تنبيه السترة", calib_title: "المعايرة", vib_label: "الاهتزاز", dist_label: "المسافة", sens_label: "الحساسية",
-                snd_label: "الصوت", diag_title: "حالة النظام", diag_subtitle: "أداء المستشعرات في الوقت الفعلي", optimal: "مثالي",
-                tof_sensors: "مستشعرات ToF", active: "نشط", haptics: "وحدات اللمس", ready: "جاهز", network: "الشبكة",
-                heatmap_title: "خريطة المسارات الآمنة", heatmap_subtitle: "عرض مناطق العوائق المتكررة", clear: "آمن", warning: "تحذير",
-                you_are_here: "موقعك الحالي", most_traveled: "الأكثر تنقلاً", park_trail: "شارع باريس",
-                caution_area: "منطقة حذر", construction: "دوار ثابت ثابت", high: "عالي", med: "متوسط", low: "منخفض", dismiss: "إغلاق",
-                edit_contact: "تعديل المرافق", full_name: "الاسم", relationship: "الصلة", phone: "الهاتف", cancel: "إلغاء", save: "حفظ",
-                mode_urban: "مدني", mode_park: "منتزه", mode_home: "منزل", guardian_mode: "وضع المراقب", sharing_with: "مشاركة المسار مع",
-                start_broadcasting: "بدء البث", stop_broadcasting: "إيقاف البث",
-                sos_alert_title: "تم الإرسال", sos_alert_msg: "تم تنبيه المرافق {name} بموقعك.", ping_alert_title: "تنبيه", ping_alert_msg: "السترة تهتز الآن.",
-                dyk_title: "هل تعلم؟",
-                dyk_fact: "هذه السترة مصنوعة بنسبة 100% من بلاستيك rPET المعاد تدويره، بمعدل 25 زجاجة بلاستيكية لكل سترة."
-            }
+<!-- ═══════════════════════════════ SCRIPTS ═══════════════════════════════ -->
+<script>
+    // ── Translations ──
+    const t = {
+        en: {
+            subtitle:"Companion App", sos_btn:"SOS", vest_name:"Guidexa Smart Vest", connected:"Connected",
+            battery:"Battery", ping_btn:"Ping Vest", calib_title:"Calibration", vib_label:"Vibration",
+            dist_label:"Distance", sens_label:"Sensitivity", snd_label:"Sound", diag_title:"System Health",
+            diag_subtitle:"Real-time sensor performance", optimal:"Optimal", tof_sensors:"ToF Sensors",
+            active:"Active", haptics:"Haptics", ready:"Ready", network:"Network",
+            heatmap_title:"Safe Paths Heatmap", heatmap_subtitle:"Frequent obstacle zones",
+            clear:"Clear", warning:"Warning", you_are_here:"You Are Here",
+            most_traveled:"Most Traveled", park_trail:"Paris Street",
+            caution_area:"Caution Area", construction:"Dr. Thabet Roundabout",
+            dismiss:"Dismiss", edit_contact:"Edit Emergency Contact", full_name:"Full Name",
+            relationship:"Relationship", phone:"Phone", cancel:"Cancel", save:"Save",
+            mode_urban:"Urban", mode_park:"Park", mode_home:"Home",
+            guardian_mode:"Guardian Mode", sharing_with:"Sharing path with",
+            start_broadcasting:"START BROADCASTING", stop_broadcasting:"STOP BROADCASTING",
+            sos_alert_title:"Emergency Sent", sos_alert_msg:"Guardian {name} has been notified with your GPS.",
+            ping_alert_title:"Ping Sent", ping_alert_msg:"Vest is vibrating now.",
+            dyk_title:"Did You Know?", dyk_fact:"100% of this vest is made from recycled rPET — 25 plastic bottles per vest.",
+            low:"Low", med:"Medium", high:"High"
+        },
+        ar: {
+            subtitle:"التطبيق الملحق", sos_btn:"طوارئ", vest_name:"سترة Guidexa الذكية", connected:"متصل الآن",
+            battery:"البطارية", ping_btn:"تنبيه السترة", calib_title:"المعايرة", vib_label:"الاهتزاز",
+            dist_label:"المسافة", sens_label:"الحساسية", snd_label:"الصوت", diag_title:"حالة النظام",
+            diag_subtitle:"أداء المستشعرات لحظياً", optimal:"مثالي", tof_sensors:"مستشعرات ToF",
+            active:"نشط", haptics:"وحدات اللمس", ready:"جاهز", network:"الشبكة",
+            heatmap_title:"خريطة المسارات الآمنة", heatmap_subtitle:"مناطق العوائق المتكررة",
+            clear:"آمن", warning:"تحذير", you_are_here:"موقعك الحالي",
+            most_traveled:"الأكثر تنقلاً", park_trail:"شارع باريس",
+            caution_area:"منطقة حذر", construction:"دوار د. ثابت ثابت",
+            dismiss:"إغلاق", edit_contact:"تعديل جهة الطوارئ", full_name:"الاسم الكامل",
+            relationship:"الصلة", phone:"الهاتف", cancel:"إلغاء", save:"حفظ",
+            mode_urban:"مدني", mode_park:"منتزه", mode_home:"منزل",
+            guardian_mode:"وضع المرافق", sharing_with:"مشاركة المسار مع",
+            start_broadcasting:"بدء البث", stop_broadcasting:"إيقاف البث",
+            sos_alert_title:"تم الإرسال", sos_alert_msg:"تم تنبيه المرافق {name} بموقعك عبر GPS.",
+            ping_alert_title:"تم التنبيه", ping_alert_msg:"السترة تهتز الآن.",
+            dyk_title:"هل تعلم؟", dyk_fact:"هذه السترة مصنوعة بالكامل من بلاستيك rPET المعاد تدويره — 25 زجاجة لكل سترة.",
+            low:"منخفض", med:"متوسط", high:"عالي"
+        }
+    };
+
+    let lang = 'en';
+    function toggleLanguage() {
+        lang = lang === 'en' ? 'ar' : 'en';
+        document.getElementById('mainHtml').dir = lang === 'ar' ? 'rtl' : 'ltr';
+        document.getElementById('langBtnText').innerText = lang === 'ar' ? 'English' : 'العربية';
+        document.querySelectorAll('[data-t]').forEach(el => {
+            const k = el.getAttribute('data-t');
+            if (t[lang][k]) el.innerText = t[lang][k];
+        updateDailyTip();
+});
+        updateSensitivity(document.getElementById('sl-sens').value);
+        document.getElementById('guardianBtn').innerText = isBroadcasting ? t[lang].stop_broadcasting : t[lang].start_broadcasting;
+        if (document.getElementById('powerBtn')) {
+            document.getElementById('powerBtn').innerText = isPowerSaving ? (lang === 'ar' ? 'إيقاف التوفير' : 'Disable Power Saving') : (lang === 'ar' ? 'تفعيل التوفير' : 'Enable Power Saving');
+            document.getElementById('powerDesc').innerText = isPowerSaving ? (lang === 'ar' ? 'تم تقليل استهلاك الطاقة عبر خفض الإعدادات غير الأساسية.' : 'Battery optimization is active. Non-essential settings have been reduced.') : (lang === 'ar' ? 'تحسين استهلاك البطارية عبر تقليل الوظائف غير الأساسية.' : 'Optimize battery usage by reducing non-essential power consumption.');
+        }
+        updateLiveClock();
+    }
+
+    function updateVal(id, v) { document.getElementById(id).innerText = v; }
+    function updateSensitivity(v) {
+        document.getElementById('sensVal').innerText = t[lang][{1:'low',2:'med',3:'high'}[v]];
+    }
+
+    function setMode(mode) {
+        const p = { urban:{vib:90,dist:1.2,sens:3,snd:70}, park:{vib:50,dist:4.5,sens:1,snd:90}, home:{vib:30,dist:0.8,sens:2,snd:20} }[mode];
+        document.getElementById('sl-vib').value = p.vib; document.getElementById('sl-dist').value = p.dist;
+        document.getElementById('sl-sens').value = p.sens; document.getElementById('sl-snd').value = p.snd;
+        updateVal('vibVal', p.vib+'%'); updateVal('distVal', p.dist+'m');
+        updateVal('sndVal', p.snd+'%'); updateSensitivity(p.sens);
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`btn-${mode}`).classList.add('active');
+    }
+
+    let isBroadcasting = false;
+    function toggleGuardian() {
+        isBroadcasting = !isBroadcasting;
+        const ind = document.getElementById('liveIndicator');
+        ind.style.display = isBroadcasting ? 'flex' : 'none';
+        document.getElementById('guardianBtn').innerText = isBroadcasting ? t[lang].stop_broadcasting : t[lang].start_broadcasting;
+        showToast(isBroadcasting ? '📡 Live broadcasting started' : '⏹ Broadcasting stopped');
+        addNotification(
+    "system",
+    isBroadcasting ? "Guardian Broadcast Started" : "Guardian Broadcast Stopped",
+    isBroadcasting ? "Live route sharing is now active." : "Live route sharing has been stopped."
+);
+    }
+
+    // ── Modal ──
+    function showModal(title, msg, type) {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalMsg').innerText = msg;
+        const icon = document.getElementById('modalIcon');
+        icon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl ${type==='emergency'?'bg-red-900 text-red-400':''}`;
+        icon.style.background = type==='emergency' ? 'rgba(248,113,113,0.15)' : 'rgba(56,189,248,0.15)';
+        icon.style.color = type==='emergency' ? 'var(--danger)' : 'var(--accent)';
+        icon.innerHTML = `<i class="fas fa-${type==='emergency'?'phone':'bell'}"></i>`;
+        document.getElementById('alertModal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('alertModal').style.display = 'none'; }
+    function openContactModal() { document.getElementById('contactModal').style.display = 'flex'; }
+    function closeContactModal() { document.getElementById('contactModal').style.display = 'none'; }
+    function saveContact() {
+        document.getElementById('displayName').innerText = document.getElementById('editName').value;
+        closeContactModal();
+        showToast('✅ Contact saved');
+    }
+    function triggerSOS() {
+        const name = document.getElementById('displayName').innerText;
+        showModal(t[lang].sos_alert_title, t[lang].sos_alert_msg.replace('{name}', name), 'emergency');
+        addNotification("alert", "Emergency SOS Sent", "Your guardian has been notified with your live GPS location.");
+    }
+    function pingVest() {
+        showModal(t[lang].ping_alert_title, t[lang].ping_alert_msg, 'info');
+        addNotification("system", "Vest Ping Sent", "The vest is vibrating now.");
+    }
+
+    // ── Toast ──
+    function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.innerText = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 3000);
+    }
+
+    // ── AI Panel ──
+    function openAI() {
+        document.getElementById('aiPanel').classList.add('open');
+        document.getElementById('chatInput').focus();
+    }
+    function closeAI() { document.getElementById('aiPanel').classList.remove('open'); }
+    function clearChat() {
+        const msgs = document.getElementById('chatMessages');
+        msgs.innerHTML = '';
+        addAIMessage("Chat cleared. How can I help you?");
+    }
+
+    let chatHistory = [];
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const msg = input.value.trim();
+        if (!msg) return;
+
+        // UI Updates
+        input.value = '';
+        document.getElementById('quickPromptsBar').style.display = 'none';
+        appendUserMessage(msg);
+        
+        const thinkingId = appendThinking();
+
+        // 1. API CONFIGURATION
+        // Get your free key from https://aistudio.google.com/
+        const API_KEY = window.GUIDEAI_API_KEY || "AIzaSyDp2mzzIIk0Zkj6FsXfX09jUKClMhA6GLM"; 
+        const MODEL = "gemini-2.5-flash";
+        const URL = API_KEY ? `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}` : null;
+
+        
+        const fallbackReply = (text) => {
+            const q = text.toLowerCase();
+            if (q.includes('battery') || q.includes('بطارية')) return lang === 'ar' ? 'مستوى البطارية الحالي 72%. يمكنك تفعيل وضع توفير الطاقة لتقليل الاهتزاز والصوت والإعدادات غير الأساسية.' : 'Current battery level is 72%. You can enable Smart Power Mode to reduce vibration, sound, and non-essential settings.';
+            if (q.includes('obstacle') || q.includes('عوائق')) return lang === 'ar' ? 'يوجد عائق على الجهة اليسرى على بُعد يقارب 1.8 متر، والمنطقة التحذيرية الأقرب هي دوار ثابت ثابت.' : 'There is an obstacle on the left side about 1.8 meters ahead, and the nearest caution area is Dr. Thabet Thabet Roundabout.';
+            if (q.includes('route') || q.includes('مسار')) return lang === 'ar' ? 'المسار الأكثر أمانًا حاليًا هو الاستمرار في شارع باريس مع تجنب منطقة الإنشاء قرب الدوار.' : 'The safest route right now is to continue via Paris Street while avoiding the construction area near the roundabout.';
+            return lang === 'ar' ? 'أنا جاهز لمساعدتك في حالة السترة، العوائق القريبة، أو المسارات الآمنة. لإجابات ذكية مباشرة من النموذج، أضف مفتاح API في window.GUIDEAI_API_KEY.' : 'I can help with vest status, nearby obstacles, and safe routes. For live model answers, add your API key to window.GUIDEAI_API_KEY.';
         };
 
-        let currentLang = 'en';
+        // 2. PREPARE CONTEXT (From current UI state)
+        const currentBattery = document.getElementById('batteryVal').innerText;
+        const activeModeBtn = document.querySelector('.mode-btn.active span');
+        const currentMode = activeModeBtn ? activeModeBtn.innerText : 'Home';
+        
+        const systemInstruction = `You are GuideAI, an assistant for the Guidexa Smart Vest (navigation for the visually impaired). 
+        Current vest sensor data (simulated):
+- ToF Sensors: Active, detecting obstacles
+- Haptics: Ready
+- Battery: ${currentBattery}
+- Network latency: 42ms
+- Mode: ${currentMode}
+- GPS location: Near Tulkarm, Palestine
+- Nearest obstacle detected: 1.8m ahead (left side)
+- Most traveled route today: Paris Street
+- Caution area: Dr. Thabet Thabet Roundabout (construction)
+- Steps today: 1,240
+- Distance walked: 0.9 km
+- Session duration: 47 minutes
+- Battery Life: 9 Hours Remaining
+        Location: Tulkarm, Palestine. 
+        Guidelines: Be calm, concise, and helpful. Do not use markdown. Use plain text only.`;
 
-        function toggleLanguage() {
-            currentLang = currentLang === 'en' ? 'ar' : 'en';
-            document.getElementById('mainHtml').dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            document.getElementById('langBtnText').innerText = currentLang === 'ar' ? 'English' : 'العربية';
-            document.querySelectorAll('[data-t]').forEach(el => {
-                const key = el.getAttribute('data-t');
-                if (translations[currentLang][key]) el.innerText = translations[currentLang][key];
+        try {
+            // 3. FORMAT HISTORY FOR GEMINI
+            // Gemini uses 'user' and 'model' roles
+            const contents = chatHistory.map(item => ({
+                role: item.role === 'assistant' ? 'model' : 'user',
+                parts: [{ text: item.content }]
+            }));
+
+            // Add current message with system context
+            contents.push({
+                role: 'user',
+                parts: [{ text: `${systemInstruction}\n\nUser: ${msg}` }]
             });
-            updateSensitivity(document.getElementById('sl-sens').value);
-            const btn = document.getElementById('guardianBtn');
-            btn.innerText = isBroadcasting ? translations[currentLang].stop_broadcasting : translations[currentLang].start_broadcasting;
-        }
 
-        function updateVal(id, value) { document.getElementById(id).innerText = value; }
+            // 4. EXECUTE REQUEST
+            if (!URL) {
+                const reply = fallbackReply(msg);
+                removeThinking(thinkingId);
+                addAIMessage(reply);
+                chatHistory.push({ role: 'user', content: msg });
+                chatHistory.push({ role: 'assistant', content: reply });
+                return;
+            }
 
-        function updateSensitivity(val) {
-            const label = document.getElementById('sensVal');
-            const keys = {1: 'low', 2: 'med', 3: 'high'};
-            label.innerText = translations[currentLang][keys[val]];
-        }
+            const res = await fetch(URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents })
+            });
 
-        function setMode(mode) {
-            const p = {
-                urban: { vib: 90, dist: 1.2, sens: 3, snd: 70 },
-                park:  { vib: 50, dist: 4.5, sens: 1, snd: 90 },
-                home:  { vib: 30, dist: 0.8, sens: 2, snd: 20 }
-            }[mode];
-            document.getElementById('sl-vib').value = p.vib; document.getElementById('sl-dist').value = p.dist;
-            document.getElementById('sl-sens').value = p.sens; document.getElementById('sl-snd').value = p.snd;
-            updateVal('vibVal', p.vib + '%'); updateVal('distVal', p.dist + 'm');
-            updateVal('sndVal', p.snd + '%'); updateSensitivity(p.sens);
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('bg-sky-50', 'border-sky-200'));
-            document.getElementById(`btn-${mode}`).classList.add('bg-sky-50', 'border-sky-200');
-        }
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.error?.message || "API Request Failed");
+            }
 
-        let isBroadcasting = false;
-        function toggleGuardian() {
-            isBroadcasting = !isBroadcasting;
-            const card = document.getElementById('guardianCard');
-            const btn = document.getElementById('guardianBtn');
-            const indicator = document.getElementById('liveIndicator');
-            card.className = isBroadcasting ? "card p-5 bg-sky-900 text-white" : "card p-5 bg-slate-900 text-white";
-            btn.innerText = isBroadcasting ? translations[currentLang].stop_broadcasting : translations[currentLang].start_broadcasting;
-            indicator.style.display = isBroadcasting ? 'block' : 'none';
-        }
+            const data = await res.json();
+            removeThinking(thinkingId);
 
-        const modal = document.getElementById('alertModal');
-        function showModal(title, msg, type) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalMsg').innerText = msg;
-            modal.style.display = 'flex';
-            const icon = document.getElementById('modalIcon');
-            icon.className = `w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-2xl ${type === 'emergency' ? 'bg-red-100 text-red-600' : 'bg-sky-100 text-sky-600'}`;
-            icon.innerHTML = `<i class="fas fa-${type === 'emergency' ? 'phone' : 'bell'}"></i>`;
-        }
+            if (data.candidates && data.candidates[0].content) {
+                const reply = data.candidates[0].content.parts[0].text;
+                addAIMessage(reply);
+                
+                // Update local history
+                chatHistory.push({ role: 'user', content: msg });
+                chatHistory.push({ role: 'assistant', content: reply });
 
-        function closeModal() { modal.style.display = 'none'; }
-        function openContactModal() { document.getElementById('contactModal').style.display = 'flex'; }
-        function closeContactModal() { document.getElementById('contactModal').style.display = 'none'; }
-        function saveContact() {
-            const name = document.getElementById('editName').value;
-            document.getElementById('displayName').innerText = name;
-            closeContactModal();
+                // Optional: TTS
+                // Replace the TTS part in your sendMessage function with this:
+if (window.speechSynthesis && reply) {
+    const utt = new SpeechSynthesisUtterance(reply);
+    
+    // Get all available voices
+    const voices = window.speechSynthesis.getVoices();
+    
+    // Try to find a high-quality Arabic voice
+    if (lang === 'ar') {
+        utt.lang = 'ar-SA';
+        // Priority: Google Arabic -> Maged -> Any Arabic
+        utt.voice = voices.find(v => v.lang.includes('ar') && v.name.includes('Google')) || 
+                    voices.find(v => v.lang.includes('ar')) || 
+                    voices[0];
+    } else {
+        utt.lang = 'en-US';
+        // Priority: Google US English -> Natural -> Any English
+        utt.voice = voices.find(v => v.lang.includes('en') && v.name.includes('Google')) || 
+                    voices.find(v => v.lang.includes('en')) || 
+                    voices[0];
+    }
+
+    utt.rate = 0.9; // Slightly slower feels more natural/calm
+    utt.pitch = 1.0;
+    window.speechSynthesis.speak(utt);
+    updateDailyTip();
+}
+            }
+        } catch(e) {
+            console.error("Gemini Error:", e);
+            removeThinking(thinkingId);
+            const errorMsg = lang === 'ar' ? "عذراً، حدث خطأ في الاتصال." : "Connection error. Please check your API key.";
+            addAIMessage(errorMsg);
         }
-        function triggerSOS() {
-            const name = document.getElementById('displayName').innerText;
-            showModal(translations[currentLang].sos_alert_title, translations[currentLang].sos_alert_msg.replace('{name}', name), "emergency");
+    }
+
+    function sendQuick(msg) {
+        document.getElementById('chatInput').value = msg;
+        sendMessage();
+    }
+
+    function appendUserMessage(msg) {
+        const el = document.createElement('div');
+        el.className = 'chat-bubble-user';
+        el.innerHTML = `<p class="text-sm leading-relaxed">${escHtml(msg)}</p>`;
+        el.setAttribute('role', 'log');
+        document.getElementById('chatMessages').appendChild(el);
+        scrollChat();
+    }
+
+    function addAIMessage(msg) {
+        const el = document.createElement('div');
+        el.className = 'chat-bubble-ai';
+        el.setAttribute('role', 'log');
+        el.innerHTML = `
+            <div class="flex items-center gap-2 mb-2">
+                <div class="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">
+                    <i class="fas fa-brain" style="font-size:8px;color:#000"></i>
+                </div>
+                <span class="text-xs font-bold" style="color:var(--accent)">GuideAI</span>
+            </div>
+            <p class="text-sm leading-relaxed">${escHtml(msg)}</p>`;
+        document.getElementById('chatMessages').appendChild(el);
+        scrollChat();
+    }
+
+    function appendThinking() {
+        const id = 'think-' + Date.now();
+        const el = document.createElement('div');
+        el.id = id;
+        el.className = 'chat-bubble-ai thinking';
+        el.innerHTML = `<div class="flex items-center gap-1.5 py-1"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+        document.getElementById('chatMessages').appendChild(el);
+        scrollChat();
+        return id;
+    }
+    function removeThinking(id) {
+        const el = document.getElementById(id);
+        if (el) el.remove();
+    }
+    function scrollChat() {
+        const c = document.getElementById('chatMessages');
+        c.scrollTop = c.scrollHeight;
+    }
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+    }
+
+    // ── Voice Input ──
+    let isListening = false;
+    let recognition = null;
+    function toggleVoice() {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            showToast('⚠️ Voice input not supported in this browser'); return;
         }
-        function pingVest() {
-            showModal(translations[currentLang].ping_alert_title, translations[currentLang].ping_alert_msg, "info");
+        if (isListening) {
+            recognition?.stop(); return;
         }
-        setMode('home');
-    </script>
+        recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        
+        // This line ensures it uses Arabic (Saudi Arabia/Levantine) when the app is in Arabic mode
+        recognition.lang = lang === 'ar' ? 'ar-SA' : 'en-US';
+        
+        recognition.interimResults = false;
+        recognition.onstart = () => {
+            isListening = true;
+            document.getElementById('voiceBtn').classList.add('voice-active');
+            document.getElementById('voiceIcon').className = 'fas fa-stop';
+            showToast(lang === 'ar' ? '🎤 جاري الاستماع...' : '🎤 Listening...');
+        };
+        recognition.onresult = (e) => {
+            document.getElementById('chatInput').value = e.results[0][0].transcript;
+        };
+        recognition.onend = () => {
+            isListening = false;
+            document.getElementById('voiceBtn').classList.remove('voice-active');
+            document.getElementById('voiceIcon').className = 'fas fa-microphone';
+            if (document.getElementById('chatInput').value) sendMessage();
+        };
+        recognition.onerror = () => {
+            isListening = false;
+            document.getElementById('voiceBtn').classList.remove('voice-active');
+            document.getElementById('voiceIcon').className = 'fas fa-microphone';
+        };
+        recognition.start();
+    }
+
+
+    function updateLiveClock() {
+        const el = document.getElementById('liveClock');
+        if (!el) return;
+        const now = new Date();
+        el.innerText = now.toLocaleTimeString(lang === 'ar' ? 'ar-EG' : 'en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function checkBatteryLevel() {
+        const batteryNum = parseInt(document.getElementById('batteryVal').innerText, 10);
+        if (batteryNum <= 20 && !window.__batteryWarned) {
+            window.__batteryWarned = true;
+            showModal(
+                lang === 'ar' ? 'تحذير بطارية' : 'Battery Warning',
+                lang === 'ar' ? 'البطارية منخفضة، يرجى شحن السترة أو تفعيل وضع توفير الطاقة.' : 'Battery is low. Please charge the vest or enable Smart Power Mode.',
+                'info'
+            );
+        }
+        if (batteryNum > 20) window.__batteryWarned = false;
+    }
+
+    let isPowerSaving = false;
+    let previousSettings = null;
+    function togglePowerSaving(forceState = null) {
+        isPowerSaving = forceState === null ? !isPowerSaving : !!forceState;
+        const card = document.getElementById('powerCard');
+        const btn = document.getElementById('powerBtn');
+        const status = document.getElementById('powerStatus');
+        const desc = document.getElementById('powerDesc');
+        const vib = document.getElementById('sl-vib');
+        const dist = document.getElementById('sl-dist');
+        const sens = document.getElementById('sl-sens');
+        const snd = document.getElementById('sl-snd');
+
+        if (isPowerSaving) {
+            previousSettings = { vib: vib.value, dist: dist.value, sens: sens.value, snd: snd.value };
+            vib.value = 35; dist.value = 1.5; sens.value = 1; snd.value = 15;
+            updateVal('vibVal', '35%');
+            updateVal('distVal', '1.5m');
+            updateSensitivity(1);
+            updateVal('sndVal', '15%');
+            card.classList.add('power-saving-on');
+            card.style.background = 'rgba(251,146,60,0.08)';
+            card.style.borderColor = 'rgba(251,146,60,0.25)';
+            status.innerText = 'ON';
+            status.style.background = 'rgba(251,146,60,0.12)';
+            status.style.color = 'var(--warning)';
+            status.style.border = '1px solid rgba(251,146,60,0.25)';
+            btn.innerText = lang === 'ar' ? 'إيقاف التوفير' : 'Disable Power Saving';
+            btn.style.background = 'var(--surface2)';
+            btn.style.color = 'var(--text)';
+            desc.innerText = lang === 'ar' ? 'تم تقليل استهلاك الطاقة عبر خفض الإعدادات غير الأساسية.' : 'Battery optimization is active. Non-essential settings have been reduced.';
+        } else {
+            if (previousSettings) {
+                vib.value = previousSettings.vib; dist.value = previousSettings.dist; sens.value = previousSettings.sens; snd.value = previousSettings.snd;
+                updateVal('vibVal', previousSettings.vib + '%');
+                updateVal('distVal', previousSettings.dist + 'm');
+                updateSensitivity(previousSettings.sens);
+                updateVal('sndVal', previousSettings.snd + '%');
+            }
+            card.classList.remove('power-saving-on');
+            card.style.background = 'var(--surface)';
+            card.style.borderColor = 'var(--border)';
+            status.innerText = 'OFF';
+            status.style.background = 'rgba(255,255,255,0.04)';
+            status.style.color = 'var(--muted)';
+            status.style.border = '1px solid var(--border)';
+            btn.innerText = lang === 'ar' ? 'تفعيل التوفير' : 'Enable Power Saving';
+            btn.style.background = 'var(--warning)';
+            btn.style.color = 'white';
+            desc.innerText = lang === 'ar' ? 'تحسين استهلاك البطارية عبر تقليل الوظائف غير الأساسية.' : 'Optimize battery usage by reducing non-essential power consumption.';
+        }
+        if (isPowerSaving) {
+    addNotification("system", "Power Saving Enabled", "Smart Power Mode has been activated.");
+} else {
+    addNotification("system", "Power Saving Disabled", "Smart Power Mode has been turned off.");
+}
+        updateBatteryTimeRemaining();
+    }
+
+    // ── Init ──
+    setMode('home');
+    updateLiveClock();
+    setInterval(updateLiveClock, 1000);
+    checkBatteryLevel();
+    setInterval(checkBatteryLevel, 10000);
+
+    function openRedirectModal() {
+    document.getElementById('redirectModal').style.display = 'flex';
+}
+function closeRedirectModal() {
+    const modal = document.getElementById('redirectModal');
+    if (modal) modal.style.display = 'none';
+}
+function toggleTheme() {
+        const html = document.documentElement;
+        const icon = document.getElementById('themeIcon');
+        
+        if (html.getAttribute('data-theme') === 'light') {
+            html.removeAttribute('data-theme');
+            icon.className = 'fas fa-sun text-warning';
+            localStorage.setItem('theme', 'dark');
+        } else {
+            html.setAttribute('data-theme', 'light');
+            icon.className = 'fas fa-moon text-accent';
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    // Add this to your // Init section to load the saved theme
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        document.getElementById('themeIcon').className = 'fas fa-moon text-accent';
+    }
+// AI Tip of the Day - Smart Version
+const generalTips = [
+  "خفض سطوع الشاشة بنسبة 20% قد يطيل عمر البطارية.",
+  "إغلاق التطبيقات بالخلفية يساعد في تقليل استهلاك الطاقة.",
+  "تقليل مدة إضاءة الشاشة التلقائية يحسن الأداء.",
+  "استخدم Wi-Fi بدل بيانات الهاتف عند الإمكان.",
+  "إيقاف البلوتوث والموقع عند عدم الاستخدام يوفر الطاقة."
+];
+
+const lowBatteryTips = [
+  "بطاريتك منخفضة! فعّل وضع توفير الطاقة الآن.",
+  "أغلق التطبيقات الثقيلة فورًا للحفاظ على الشحن.",
+  "خفض السطوع الآن سيساعدك على كسب وقت إضافي.",
+  "أوقف الاهتزاز والخدمات غير الضرورية لتقليل الاستهلاك."
+];
+
+async function loadSmartAITip() {
+  const tipElement = document.getElementById("dailyTipText");
+  if (!tipElement) return;
+
+  const batteryText = document.getElementById("batteryVal")?.innerText || "72%";
+  const level = parseInt(batteryText.replace("%", "")) || 72;
+
+  if (level <= 25) {
+    const randomIndex = Math.floor(Math.random() * lowBatteryTips.length);
+    tipElement.textContent = `🔋 Battery ${level}% — ${lowBatteryTips[randomIndex]}`;
+  } else {
+    const today = new Date();
+    const start = new Date(today.getFullYear(), 0, 0);
+    const diff = today - start;
+    const oneDay = 1000 * 60 * 60 * 24;
+    const dayOfYear = Math.floor(diff / oneDay);
+
+    const tipIndex = dayOfYear % generalTips.length;
+    tipElement.textContent = generalTips[tipIndex];
+  }
+}
+
+document.addEventListener("DOMContentLoaded", loadSmartAITip);
+// ─────────────────────────────────────────────
+// REAL APP NOTIFICATIONS (LOCAL STORAGE)
+// ─────────────────────────────────────────────
+
+let notifications = JSON.parse(localStorage.getItem("guideai_notifications") || "[]");
+
+function saveNotifications() {
+    localStorage.setItem("guideai_notifications", JSON.stringify(notifications));
+}
+
+function openNotificationCenter() {
+    document.getElementById('notificationModal').style.display = 'flex';
+    renderNotifications();
+}
+
+function closeNotificationCenter() {
+    document.getElementById('notificationModal').style.display = 'none';
+}
+
+function getNotificationIcon(type) {
+    if (type === "alert") {
+        return {
+            icon: "fa-triangle-exclamation",
+            bg: "rgba(248,113,113,0.12)",
+            border: "1px solid rgba(248,113,113,0.2)",
+            color: "var(--danger)"
+        };
+    }
+    if (type === "ai") {
+        return {
+            icon: "fa-brain",
+            bg: "rgba(56,189,248,0.12)",
+            border: "1px solid rgba(56,189,248,0.2)",
+            color: "var(--accent)"
+        };
+    }
+    return {
+        icon: "fa-microchip",
+        bg: "rgba(52,211,153,0.12)",
+        border: "1px solid rgba(52,211,153,0.2)",
+        color: "var(--green)"
+    };
+}
+
+function renderNotifications() {
+    const list = document.getElementById('notificationList');
+    if (!list) return;
+
+    if (notifications.length === 0) {
+        list.innerHTML = `
+            <div class="notification-empty">
+                <i class="fas fa-bell-slash text-2xl mb-3" style="color:var(--muted)"></i>
+                <p class="text-sm font-bold mb-1">No notifications yet</p>
+                <p class="text-xs">Real app events will appear here.</p>
+            </div>
+        `;
+        updateNotificationBadge();
+        return;
+    }
+
+    list.innerHTML = notifications.map(notif => {
+        const meta = getNotificationIcon(notif.type);
+        return `
+            <div class="notification-item ${notif.unread ? 'unread' : ''}">
+                <div class="notification-icon" style="background:${meta.bg}; border:${meta.border}; color:${meta.color}">
+                    <i class="fas ${meta.icon}"></i>
+                </div>
+                <div class="notification-content">
+                    <div class="notification-title">${notif.title}</div>
+                    <div class="notification-message">${notif.message}</div>
+                    <div class="notification-time">${notif.time}</div>
+                </div>
+            </div>
+        `;
+    }).join("");
+
+    updateNotificationBadge();
+}
+
+function updateNotificationBadge() {
+    const badge = document.getElementById('notifBadge');
+    if (!badge) return;
+    const unreadCount = notifications.filter(n => n.unread).length;
+
+    if (unreadCount > 0) {
+        badge.classList.remove('hidden');
+        badge.innerText = unreadCount > 9 ? '9+' : unreadCount;
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function markAllNotificationsRead() {
+    notifications = notifications.map(n => ({ ...n, unread: false }));
+    saveNotifications();
+    renderNotifications();
+    showToast('🔔 All notifications marked as read');
+}
+
+function clearNotifications() {
+    notifications = [];
+    saveNotifications();
+    renderNotifications();
+    showToast('🗑 Notifications cleared');
+}
+
+function addNotification(type, title, message) {
+    const now = new Date();
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    const newNotification = {
+        id: Date.now(),
+        type,
+        title,
+        message,
+        time,
+        unread: true
+    };
+
+    notifications.unshift(newNotification);
+    if (notifications.length > 20) notifications = notifications.slice(0, 20);
+
+    saveNotifications();
+    updateNotificationBadge();
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    updateNotificationBadge();
+    updateBatteryTimeRemaining();
+    updateWeatherTemperature();
+    setInterval(updateWeatherTemperature, 600000);
+    updateDailyTip();
+});
+
+function updateBatteryTimeRemaining() {
+    const batteryEl = document.getElementById('batteryVal');
+    const timeEl = document.getElementById('batteryTimeRemaining');
+    if (!batteryEl || !timeEl) return;
+
+    const batteryNum = parseInt(batteryEl.innerText, 10);
+    if (isNaN(batteryNum)) return;
+
+    const totalMinutesAtFullCharge = 18 * 60; // 18 hours at 100%
+    const remainingMinutes = Math.round((batteryNum / 100) * totalMinutesAtFullCharge);
+
+    const hours = Math.floor(remainingMinutes / 60);
+    const minutes = remainingMinutes % 60;
+
+    if (lang === 'ar') {
+        timeEl.innerText = `الوقت المتبقي تقريبًا: ${hours}س ${minutes}د`;
+    } else {
+        timeEl.innerText = `Estimated time left: ${hours}h ${minutes}m`;
+    }
+}
+
+function openInstagramModal() {
+    const modal = document.getElementById('instagramModal');
+    if (modal) modal.style.display = 'flex';
+}
+
+function closeInstagramModal() {
+    const modal = document.getElementById('instagramModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function goToInstagram() {
+    window.open('https://www.instagram.com/guidexacompany?igsh=a3V3YTc2OGJnYnhv&utm_source=qr', '_blank');
+    closeInstagramModal();
+}
+
+
+
+
+
+
+async function updateWeatherTemperature() {
+    const tempEl = document.getElementById('tempVal');
+    if (!tempEl) return;
+
+    try {
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=32.31&longitude=35.03&current=temperature_2m&timezone=auto';
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Weather request failed');
+
+        const data = await response.json();
+        const temp = Math.round(data?.current?.temperature_2m);
+
+        if (!Number.isFinite(temp)) throw new Error('Invalid weather data');
+        tempEl.innerText = `${temp}°C`;
+    } catch (error) {
+        console.error('Weather temperature update failed:', error);
+    }
+}
+
+
+
+function updateDailyTip() {
+    const tipEl = document.getElementById('dailyTipText');
+    if (!tipEl) return;
+
+    const tips = {
+        en: [
+            "Tip: Enable Eco mode below 30% battery to extend runtime.",
+            "Tip: Keep Bluetooth active for faster real-time alerts.",
+            "Tip: Night mode improves visibility and safety after dark.",
+            "Tip: Check notifications regularly for critical vest updates."
+        ],
+        ar: [
+            "نصيحة: فعّل وضع التوفير عند نزول البطارية تحت 30% لزيادة مدة التشغيل.",
+            "نصيحة: أبقِ البلوتوث مفعّلًا للحصول على تنبيهات أسرع.",
+            "نصيحة: الوضع الليلي يحسن الرؤية والأمان بعد الغروب.",
+            "نصيحة: راقب الإشعارات باستمرار لمعرفة التنبيهات المهمة."
+        ]
+    };
+
+    const currentLang = (typeof lang !== 'undefined' && lang === 'ar') ? 'ar' : 'en';
+    const list = tips[currentLang];
+
+    // ثابت خلال الجلسة حسب اليوم
+    const index = new Date().getDate() % list.length;
+    tipEl.innerText = list[index];
+}
+
+</script>
+<!-- Production Team Footer Message -->
+<div class="mt-10 mb-6 text-center px-4">
+    <div class="inline-block px-4 py-2 rounded-2xl" style="background:rgba(255,255,255,0.03); border:1px solid var(--border);">
+        <p class="text-[10px] font-black uppercase tracking-[0.25em]" style="color:var(--muted); opacity:0.7;">
+            From the Production Team
+        </p>
+        <p class="text-xs sm:text-sm mt-2 leading-relaxed max-w-md mx-auto" style="color:var(--muted);">
+            Thank you for trusting GuideAI — designed to keep you connected, protected, and one step ahead.
+        </p>
+    </div>
+</div>
 </body>
 </html>
