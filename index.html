@@ -6,6 +6,7 @@
     <title>GuideAI | Smart Companion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -308,10 +309,139 @@
 .notification-message { font-size: 12px; line-height: 1.6; color: var(--muted); margin-bottom: 6px; }
 .notification-time { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
 .notification-empty { text-align: center; padding: 30px 16px; color: var(--muted); }
+
+        /* Apple-inspired launch experience */
+        #launchScreen { position:fixed; inset:0; z-index:9999; display:flex; align-items:center; justify-content:center; overflow:hidden; background:radial-gradient(circle at 50% 38%, #172554 0%, #090d18 43%, #03050a 100%); transition:opacity .65s ease, visibility .65s ease; }
+        #launchScreen.hide { opacity:0; visibility:hidden; pointer-events:none; }
+        .launch-orb { position:absolute; width:420px; height:420px; border-radius:50%; background:radial-gradient(circle, rgba(56,189,248,.24), rgba(129,140,248,.08) 45%, transparent 70%); filter:blur(8px); animation:launchFloat 4s ease-in-out infinite; }
+        .launch-content { position:relative; width:min(88vw,420px); text-align:center; padding:32px; }
+        .launch-logo { width:92px; height:92px; margin:0 auto 24px; border-radius:27px; display:flex; align-items:center; justify-content:center; color:#04111c; font-size:34px; background:linear-gradient(145deg,#7dd3fc,#818cf8); box-shadow:0 24px 70px rgba(56,189,248,.26), inset 0 1px 1px rgba(255,255,255,.65); animation:logoReveal .9s cubic-bezier(.2,.8,.2,1) both; }
+        .launch-title { color:white; font-size:34px; letter-spacing:-1.4px; font-weight:700; opacity:0; animation:fadeLaunch .7s .25s forwards; }
+        .launch-subtitle { color:rgba(226,232,240,.62); font-size:13px; margin-top:8px; letter-spacing:.12em; text-transform:uppercase; opacity:0; animation:fadeLaunch .7s .42s forwards; }
+        .launch-status { margin:34px auto 0; width:230px; opacity:0; animation:fadeLaunch .7s .58s forwards; }
+        .launch-track { height:4px; border-radius:999px; overflow:hidden; background:rgba(255,255,255,.1); }
+        .launch-progress { width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#7dd3fc,#a5b4fc); animation:launchLoad 2.1s .25s cubic-bezier(.4,0,.2,1) forwards; }
+        #launchStatusText { margin-top:12px; color:rgba(226,232,240,.65); font-size:11px; font-weight:600; }
+        @keyframes logoReveal { from{opacity:0; transform:scale(.72) translateY(18px); filter:blur(8px)} to{opacity:1; transform:scale(1) translateY(0); filter:blur(0)} }
+        @keyframes fadeLaunch { to{opacity:1} }
+        @keyframes launchLoad { to{width:100%} }
+        @keyframes launchFloat { 50%{transform:scale(1.08) translateY(-10px)} }
+        #liveMap { width:100%; height:100%; z-index:1; background:#08111f; }
+        .leaflet-control-attribution { font-size:8px !important; }
+        .leaflet-control-zoom a { background:rgba(10,15,30,.9) !important; color:white !important; border-color:rgba(255,255,255,.12) !important; }
+        .device-marker { width:22px; height:22px; border-radius:50%; background:#38bdf8; border:4px solid white; box-shadow:0 0 0 8px rgba(56,189,248,.23), 0 6px 22px rgba(0,0,0,.35); }
+
+        /* Premium multi-step onboarding */
+        #onboardingFlow{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;padding:20px;background:radial-gradient(circle at 50% 18%,rgba(56,189,248,.16),transparent 36%),linear-gradient(180deg,#070b14 0%,#03050a 100%);overflow:hidden}
+        #onboardingFlow.show{display:flex}
+        .onboarding-glow{position:absolute;width:520px;height:520px;border-radius:50%;filter:blur(80px);background:rgba(99,102,241,.12);top:-220px;right:-160px;pointer-events:none}
+        .onboarding-shell{position:relative;width:min(100%,470px);min-height:650px;border:1px solid rgba(255,255,255,.10);border-radius:34px;background:rgba(14,20,34,.76);backdrop-filter:blur(30px);box-shadow:0 35px 100px rgba(0,0,0,.46);overflow:hidden;color:#f8fafc}
+        .onboarding-top{display:flex;align-items:center;justify-content:space-between;padding:22px 24px 0}
+        .onboarding-brand{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;letter-spacing:.02em}
+        .onboarding-brand-icon{width:34px;height:34px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(145deg,#7dd3fc,#818cf8);color:#07111e;box-shadow:0 8px 26px rgba(56,189,248,.25)}
+        .onboarding-skip{border:0;background:transparent;color:rgba(226,232,240,.58);font-size:12px;font-weight:700;cursor:pointer;padding:8px}
+        .onboarding-progress{display:flex;gap:7px;padding:18px 24px 0}
+        .onboarding-progress span{height:4px;flex:1;border-radius:999px;background:rgba(255,255,255,.09);transition:.35s ease}
+        .onboarding-progress span.active{background:linear-gradient(90deg,#7dd3fc,#818cf8);box-shadow:0 0 18px rgba(56,189,248,.35)}
+        .onboarding-stage{display:none;padding:30px 28px 26px;animation:onboardIn .45s cubic-bezier(.2,.8,.2,1)}
+        .onboarding-stage.active{display:block}
+        .onboarding-visual{height:210px;border-radius:28px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;margin-bottom:30px;background:linear-gradient(145deg,rgba(56,189,248,.12),rgba(129,140,248,.07));border:1px solid rgba(255,255,255,.08)}
+        .onboarding-visual:before{content:'';position:absolute;width:170px;height:170px;border-radius:50%;background:rgba(56,189,248,.13);filter:blur(20px)}
+        .onboarding-main-icon{position:relative;width:92px;height:92px;border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:34px;background:linear-gradient(145deg,#7dd3fc,#818cf8);color:#06111d;box-shadow:0 24px 60px rgba(56,189,248,.30)}
+        .onboarding-stage h2{font-size:29px;line-height:1.13;letter-spacing:-.8px;margin-bottom:12px}
+        .onboarding-stage>p{font-size:14px;line-height:1.75;color:rgba(203,213,225,.70);min-height:52px}
+        .onboarding-options{display:grid;gap:10px;margin-top:22px}
+        .setup-option{width:100%;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:18px;padding:14px 15px;display:flex;align-items:center;gap:13px;color:#f8fafc;text-align:left;cursor:pointer;transition:.2s}
+        .setup-option:hover,.setup-option.selected{border-color:rgba(56,189,248,.42);background:rgba(56,189,248,.09);transform:translateY(-1px)}
+        .setup-option-icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(56,189,248,.12);color:#7dd3fc;flex-shrink:0}
+        .setup-option strong{display:block;font-size:13px}.setup-option small{display:block;color:rgba(203,213,225,.55);font-size:11px;margin-top:3px;line-height:1.4}
+        .setup-status{margin-top:20px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px;font-size:12px;color:rgba(226,232,240,.72)}
+        .setup-status-dot{width:10px;height:10px;border-radius:50%;background:#34d399;box-shadow:0 0 12px rgba(52,211,153,.7)}
+        .onboarding-actions{position:absolute;left:0;right:0;bottom:0;padding:18px 28px 26px;background:linear-gradient(180deg,transparent,rgba(14,20,34,.98) 25%)}
+        .onboarding-primary{width:100%;border:0;border-radius:18px;padding:15px 18px;background:linear-gradient(135deg,#7dd3fc,#818cf8);color:#06111d;font-size:14px;font-weight:900;cursor:pointer;box-shadow:0 16px 35px rgba(56,189,248,.18);transition:.2s}
+        .onboarding-primary:hover{transform:translateY(-1px);box-shadow:0 20px 42px rgba(56,189,248,.25)}
+        .onboarding-secondary{width:100%;border:0;background:transparent;color:rgba(203,213,225,.55);font-size:12px;font-weight:700;padding:12px 0 0;cursor:pointer}
+        .permission-result{font-size:11px;font-weight:800;margin-left:auto;color:#7dd3fc}
+        @keyframes onboardIn{from{opacity:0;transform:translateX(22px) scale(.985)}to{opacity:1;transform:none}}
+        @media(max-width:520px){.onboarding-shell{min-height:100%;border-radius:0;border:0}.onboarding-stage{padding:24px 22px 24px}.onboarding-actions{padding-left:22px;padding-right:22px}.onboarding-visual{height:185px}}
     </style>
 
 </head>
 <body>
+
+<!-- Premium launch screen -->
+<div id="launchScreen" aria-label="GuideAI is starting">
+    <div class="launch-orb"></div>
+    <div class="launch-content">
+        <div class="launch-logo"><i class="fas fa-eye-slash"></i></div>
+        <div class="launch-title">GuideAI</div>
+        <div class="launch-subtitle">Intelligent Mobility Companion</div>
+        <div class="launch-status">
+            <div class="launch-track"><div class="launch-progress"></div></div>
+            <div id="launchStatusText">Preparing smart safety systems…</div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Premium general setup flow -->
+<div id="onboardingFlow" aria-label="GuideAI setup assistant">
+  <div class="onboarding-glow"></div>
+  <div class="onboarding-shell">
+    <div class="onboarding-top">
+      <div class="onboarding-brand"><span class="onboarding-brand-icon"><i class="fas fa-eye-slash"></i></span>GuideAI Setup</div>
+      <button class="onboarding-skip" onclick="finishOnboarding()">Skip</button>
+    </div>
+    <div class="onboarding-progress" id="onboardingProgress"><span></span><span></span><span></span><span></span><span></span></div>
+
+    <section class="onboarding-stage active" data-step="0">
+      <div class="onboarding-visual"><div class="onboarding-main-icon"><i class="fas fa-sparkles"></i></div></div>
+      <h2>Welcome to smarter, safer mobility.</h2>
+      <p>We will prepare GuideAI, connect your smart vest, and personalize the experience in a few guided steps.</p>
+    </section>
+
+    <section class="onboarding-stage" data-step="1">
+      <div class="onboarding-visual"><div class="onboarding-main-icon"><i class="fas fa-language"></i></div></div>
+      <h2>Choose your language.</h2>
+      <p>You can switch languages later at any time from the main dashboard.</p>
+      <div class="onboarding-options">
+        <button class="setup-option selected" id="setupEnglish" onclick="selectSetupLanguage('en')"><span class="setup-option-icon"><i class="fas fa-check"></i></span><span><strong>English</strong><small>Use GuideAI in English</small></span></button>
+        <button class="setup-option" id="setupArabic" onclick="selectSetupLanguage('ar')"><span class="setup-option-icon"><i class="fas fa-globe"></i></span><span><strong>العربية</strong><small>استخدام التطبيق باللغة العربية</small></span></button>
+      </div>
+    </section>
+
+    <section class="onboarding-stage" data-step="2">
+      <div class="onboarding-visual"><div class="onboarding-main-icon"><i class="fas fa-location-crosshairs"></i></div></div>
+      <h2>Enable live location.</h2>
+      <p>Location keeps the map centered on the device and supports accurate weather and guardian sharing.</p>
+      <button class="setup-option" onclick="requestSetupLocation()"><span class="setup-option-icon"><i class="fas fa-location-dot"></i></span><span><strong>Allow device location</strong><small>High-accuracy GPS when available</small></span><span id="locationPermissionResult" class="permission-result">Tap to enable</span></button>
+      <div class="setup-status"><span class="setup-status-dot"></span><span>Your location is processed only for GuideAI safety features.</span></div>
+    </section>
+
+    <section class="onboarding-stage" data-step="3">
+      <div class="onboarding-visual"><div class="onboarding-main-icon"><i class="fab fa-bluetooth-b"></i></div></div>
+      <h2>Connect the smart vest.</h2>
+      <p>Prepare Bluetooth communication for real-time battery, temperature, GPS, and sensor updates.</p>
+      <button class="setup-option" onclick="simulateVestPairing()"><span class="setup-option-icon"><i class="fas fa-vest"></i></span><span><strong>Guidexa Smart Vest</strong><small>Secure nearby device pairing</small></span><span id="vestPairingResult" class="permission-result">Connect</span></button>
+      <div class="setup-status"><span id="vestSetupDot" class="setup-status-dot" style="background:#64748b;box-shadow:none"></span><span id="vestSetupText">Waiting for connection test.</span></div>
+    </section>
+
+    <section class="onboarding-stage" data-step="4">
+      <div class="onboarding-visual"><div class="onboarding-main-icon"><i class="fas fa-shield-heart"></i></div></div>
+      <h2>GuideAI is ready.</h2>
+      <p>Location, safety sensors, personalized controls, and live monitoring are prepared for your journey.</p>
+      <div class="onboarding-options">
+        <div class="setup-option selected"><span class="setup-option-icon"><i class="fas fa-check"></i></span><span><strong>Safety systems ready</strong><small>Monitoring and emergency tools available</small></span></div>
+        <div class="setup-option selected"><span class="setup-option-icon"><i class="fas fa-map-location-dot"></i></span><span><strong>Rawabi dashboard prepared</strong><small>Live device position will appear on the map</small></span></div>
+      </div>
+    </section>
+
+    <div class="onboarding-actions">
+      <button id="onboardingNextBtn" class="onboarding-primary" onclick="nextOnboardingStep()">Get Started</button>
+      <button id="onboardingBackBtn" class="onboarding-secondary" onclick="previousOnboardingStep()" style="visibility:hidden">Back</button>
+    </div>
+  </div>
+</div>
 
 <!-- Toast Notification -->
 <div id="toast" role="alert" aria-live="assertive"></div>
@@ -636,7 +766,7 @@
                     <p class="text-sm font-bold">Live Monitoring Active</p>
                 </div>
                 <div class="flex items-center gap-4 text-xs" style="color:var(--muted)">
-                    <span><i class="fas fa-location-dot mr-1" style="color:var(--accent)"></i> Tulkarm</span>
+                    <span><i class="fas fa-location-dot mr-1" style="color:var(--accent)"></i> <span id="topLocationName">Rawabi</span></span>
                     <span><i class="fas fa-temperature-half mr-1" style="color:var(--warning)"></i> <span id="tempVal">18°C</span></span>
                     <span><i class="fas fa-clock mr-1"></i> <span id="liveClock">--:--</span></span>
                 </div>
@@ -745,20 +875,16 @@
                     </div>
                 </div>
 
-                <div class="relative w-full h-56 rounded-2xl overflow-hidden" style="background:#060d1a;border:1px solid var(--border)" role="img" aria-label="Map showing safe paths and obstacle zones. You are at center. Paris Street is a safe frequently traveled route. Dr. Thabet Thabet Roundabout is a caution area.">
-                    <!-- Map blobs -->
-                    <div class="map-zone" style="width:160px;height:160px;background:rgba(56,189,248,0.18);top:10%;left:10%"></div>
-                    <div class="map-zone" style="width:100px;height:100px;background:rgba(251,146,60,0.22);top:40%;right:15%"></div>
-                    <div class="map-zone" style="width:80px;height:80px;background:rgba(56,189,248,0.12);bottom:15%;left:30%"></div>
-                    <!-- Grid lines overlay -->
-                    <div class="absolute inset-0" style="background-image:linear-gradient(rgba(56,189,248,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.04) 1px,transparent 1px);background-size:30px 30px"></div>
-                    <!-- User location -->
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 flex flex-col items-center gap-1.5">
-                        <div class="w-4 h-4 rounded-full border-2 border-white vest-pulse" style="background:var(--accent)" aria-hidden="true"></div>
-                        <div class="px-2.5 py-1 rounded-full" style="background:rgba(10,15,30,0.9);border:1px solid rgba(56,189,248,0.4)">
-                            <p class="text-white font-black uppercase tracking-widest" style="font-size:7px" data-t="you_are_here">You Are Here</p>
+                <div class="relative w-full h-56 rounded-2xl overflow-hidden" style="background:#060d1a;border:1px solid var(--border)" role="application" aria-label="Live device location map">
+                    <div id="liveMap"></div>
+                    <div id="mapLoading" class="absolute inset-0 z-20 flex items-center justify-center" style="background:rgba(6,13,26,.88);backdrop-filter:blur(8px)">
+                        <div class="text-center">
+                            <div class="w-11 h-11 rounded-full mx-auto mb-3 flex items-center justify-center vest-pulse" style="background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.3)"><i class="fas fa-location-crosshairs" style="color:var(--accent)"></i></div>
+                            <p class="text-xs font-bold">Locating your device…</p>
+                            <p class="text-[10px] mt-1" style="color:var(--muted)">Please allow location access</p>
                         </div>
                     </div>
+                    <button onclick="requestDeviceLocation(true)" class="absolute right-3 bottom-3 z-30 w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(10,15,30,.9);border:1px solid rgba(255,255,255,.16);color:white" aria-label="Center map on device"><i class="fas fa-location-crosshairs"></i></button>
                 </div>
 
                 <div class="mt-4 grid grid-cols-2 gap-3">
@@ -815,6 +941,7 @@
 </main>
 
 <!-- ═══════════════════════════════ SCRIPTS ═══════════════════════════════ -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
     // ── Translations ──
     const t = {
@@ -1466,8 +1593,8 @@ function addNotification(type, title, message) {
 document.addEventListener("DOMContentLoaded", function () {
     updateNotificationBadge();
     updateBatteryTimeRemaining();
-    updateWeatherTemperature();
-    setInterval(updateWeatherTemperature, 600000);
+    initLiveMap();
+    setInterval(() => updateWeatherTemperature(), 600000);
     updateDailyTip();
 });
 
@@ -1512,24 +1639,95 @@ function goToInstagram() {
 
 
 
-async function updateWeatherTemperature() {
+async function updateWeatherTemperature(latitude = window.guideAILocation?.latitude, longitude = window.guideAILocation?.longitude) {
     const tempEl = document.getElementById('tempVal');
     if (!tempEl) return;
 
+    // Hardware integration: the vest may call window.updateVestTelemetry({ temperature, latitude, longitude }).
+    if (Number.isFinite(window.guideAIVestTemperature)) {
+        tempEl.innerText = `${Math.round(window.guideAIVestTemperature)}°C`;
+        tempEl.title = 'Live temperature received from the vest';
+        return;
+    }
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
     try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=32.31&longitude=35.03&current=temperature_2m&timezone=auto';
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&timezone=auto`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Weather request failed');
-
         const data = await response.json();
         const temp = Math.round(data?.current?.temperature_2m);
-
         if (!Number.isFinite(temp)) throw new Error('Invalid weather data');
         tempEl.innerText = `${temp}°C`;
+        tempEl.title = 'Temperature at the device GPS location';
     } catch (error) {
         console.error('Weather temperature update failed:', error);
     }
 }
+
+let guideAIMap;
+let guideAIMarker;
+let guideAIAccuracyCircle;
+
+function initLiveMap() {
+    if (!window.L || guideAIMap) return;
+    guideAIMap = L.map('liveMap', { zoomControl:true, attributionControl:true }).setView([32.31, 35.03], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom:19,
+        attribution:'&copy; OpenStreetMap'
+    }).addTo(guideAIMap);
+}
+
+function placeDeviceOnMap(latitude, longitude, accuracy = 20) {
+    initLiveMap();
+    if (!guideAIMap) return;
+    const point=[latitude, longitude];
+    if (!guideAIMarker) {
+        const icon=L.divIcon({className:'', html:'<div class="device-marker"></div>', iconSize:[22,22], iconAnchor:[11,11]});
+        guideAIMarker=L.marker(point,{icon}).addTo(guideAIMap).bindPopup('GuideAI device location');
+        guideAIAccuracyCircle=L.circle(point,{radius:accuracy,weight:1,fillOpacity:.08}).addTo(guideAIMap);
+    } else {
+        guideAIMarker.setLatLng(point);
+        guideAIAccuracyCircle.setLatLng(point).setRadius(accuracy);
+    }
+    guideAIMap.setView(point, Math.max(guideAIMap.getZoom(),16), {animate:true});
+    const loading=document.getElementById('mapLoading');
+    if (loading) loading.style.display='none';
+}
+
+function requestDeviceLocation(recenter = false) {
+    initLiveMap();
+    if (!navigator.geolocation) {
+        showToast('Location is not supported on this device');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(async position => {
+        const {latitude, longitude, accuracy}=position.coords;
+        window.guideAILocation={latitude,longitude,accuracy};
+        placeDeviceOnMap(latitude,longitude,accuracy);
+        await updateWeatherTemperature(latitude,longitude);
+        if (recenter) showToast(lang === 'ar' ? '📍 تم تحديث موقع الجهاز' : '📍 Device location updated');
+    }, error => {
+        const loading=document.getElementById('mapLoading');
+        if (loading) loading.innerHTML='<div class="text-center px-6"><i class="fas fa-location-dot text-2xl mb-3" style="color:var(--warning)"></i><p class="text-xs font-bold">Location permission is required</p><button onclick="requestDeviceLocation(true)" class="mt-3 px-4 py-2 rounded-xl text-xs font-bold" style="background:var(--accent);color:#001018">Try Again</button></div>';
+        console.warn('Location request failed:', error);
+    }, {enableHighAccuracy:true,timeout:12000,maximumAge:15000});
+}
+
+// Entry point for ESP32/Bluetooth code: keeps temperature and GPS identical to the physical vest display.
+window.updateVestTelemetry = function(payload = {}) {
+    if (Number.isFinite(Number(payload.temperature))) {
+        window.guideAIVestTemperature=Number(payload.temperature);
+        updateWeatherTemperature();
+    }
+    const latitude=Number(payload.latitude), longitude=Number(payload.longitude);
+    if (Number.isFinite(latitude) && Number.isFinite(longitude)) {
+        window.guideAILocation={latitude,longitude,accuracy:Number(payload.accuracy)||10};
+        placeDeviceOnMap(latitude,longitude,Number(payload.accuracy)||10);
+    }
+};
+
+window.addEventListener('guideai-telemetry', event => window.updateVestTelemetry(event.detail || {}));
 
 
 
@@ -1560,6 +1758,88 @@ function updateDailyTip() {
     tipEl.innerText = list[index];
 }
 
+
+
+// Premium startup choreography followed by guided setup
+let onboardingStep = 0;
+let selectedSetupLanguage = 'en';
+
+function renderOnboardingStep() {
+    document.querySelectorAll('.onboarding-stage').forEach((stage, index) => stage.classList.toggle('active', index === onboardingStep));
+    document.querySelectorAll('#onboardingProgress span').forEach((bar, index) => bar.classList.toggle('active', index <= onboardingStep));
+    const next = document.getElementById('onboardingNextBtn');
+    const back = document.getElementById('onboardingBackBtn');
+    back.style.visibility = onboardingStep === 0 ? 'hidden' : 'visible';
+    next.textContent = onboardingStep === 0 ? 'Get Started' : onboardingStep === 4 ? 'Open GuideAI' : 'Continue';
+}
+
+function nextOnboardingStep() {
+    if (onboardingStep >= 4) return finishOnboarding();
+    onboardingStep += 1;
+    renderOnboardingStep();
+}
+
+function previousOnboardingStep() {
+    if (onboardingStep > 0) onboardingStep -= 1;
+    renderOnboardingStep();
+}
+
+function selectSetupLanguage(choice) {
+    selectedSetupLanguage = choice;
+    document.getElementById('setupEnglish').classList.toggle('selected', choice === 'en');
+    document.getElementById('setupArabic').classList.toggle('selected', choice === 'ar');
+}
+
+function requestSetupLocation() {
+    const result = document.getElementById('locationPermissionResult');
+    result.textContent = 'Requesting…';
+    if (!navigator.geolocation) { result.textContent = 'Unavailable'; return; }
+    navigator.geolocation.getCurrentPosition(position => {
+        const { latitude, longitude, accuracy } = position.coords;
+        window.guideAILocation = { latitude, longitude, accuracy };
+        placeDeviceOnMap(latitude, longitude, accuracy);
+        updateWeatherTemperature(latitude, longitude);
+        result.textContent = 'Enabled ✓';
+    }, () => { result.textContent = 'Not allowed'; }, { enableHighAccuracy:true, timeout:12000, maximumAge:15000 });
+}
+
+function simulateVestPairing() {
+    const result = document.getElementById('vestPairingResult');
+    const text = document.getElementById('vestSetupText');
+    const dot = document.getElementById('vestSetupDot');
+    result.textContent = 'Scanning…';
+    text.textContent = 'Checking Bluetooth and vest telemetry…';
+    setTimeout(() => {
+        result.textContent = 'Connected ✓';
+        text.textContent = 'Vest connection and safety sensors are ready.';
+        dot.style.background = '#34d399';
+        dot.style.boxShadow = '0 0 12px rgba(52,211,153,.7)';
+    }, 1100);
+}
+
+function finishOnboarding() {
+    const flow = document.getElementById('onboardingFlow');
+    flow.classList.remove('show');
+    if (selectedSetupLanguage === 'ar' && lang !== 'ar') toggleLanguage();
+    if (selectedSetupLanguage === 'en' && lang !== 'en') toggleLanguage();
+    if (!window.guideAILocation) requestDeviceLocation();
+    setTimeout(() => guideAIMap && guideAIMap.invalidateSize(), 250);
+}
+
+window.addEventListener('load', () => {
+    const status=document.getElementById('launchStatusText');
+    const messages=['Checking core services…','Preparing safety sensors…','Loading setup assistant…','GuideAI is ready'];
+    let i=0;
+    const ticker=setInterval(() => { if(status && i < messages.length) status.textContent=messages[i++]; }, 500);
+    setTimeout(() => {
+        clearInterval(ticker);
+        const launch=document.getElementById('launchScreen');
+        const flow=document.getElementById('onboardingFlow');
+        if (launch) launch.classList.add('hide');
+        if (flow) flow.classList.add('show');
+        renderOnboardingStep();
+    }, 2350);
+});
 </script>
 <!-- Production Team Footer Message -->
 <div class="mt-10 mb-6 text-center px-4">
